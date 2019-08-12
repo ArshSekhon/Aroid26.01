@@ -99,32 +99,138 @@ void killMotors(){
   
       spinMotors(0,0,0,0);
   }
-
-void spinMotorsToRotateClockwise(int degrees){
-  readFromMPU9265();
-  float initialHeading = robotState.mpu9265Reading.headingDegrees;
-  float targetPosition = initialHeading + degrees;
-  float prevHeading = initialHeading;
-  
-  int quadrantAdjustment=0;
-  
-  while(robotState.mpu9265Reading.headingDegrees < targetPosition-quadrantAdjustment*360){
-    serialprintf("init: %f current: %f", initialHeading, robotState.mpu9265Reading.headingDegrees);
-    readFromMPU9265();
-    spinMotors(175,175,-175,-175);
-    if(prevHeading-90>robotState.mpu9265Reading.headingDegrees-90){
-      quadrantAdjustment++;
-    }
-    else{
-      if(quadrantAdjustment>0)
-        quadrantAdjustment--;
-      }
+int isAround360(int degrees){
+    if((degrees<5 || degrees>355) )
+      return 1;
+    else
+      return 0;
   }
 
+
+int getQuadrant(int degrees){
+      return degrees/90;  
   
+  }
+
     
+void spinMotorsToRotateClockwise(int degrees){
+    // give some time to the filter 
+    for(int i=0; i<100;i++){
+      readFromMPU9265();
+    }
+    
+  float initialHeading = robotState.mpu9265Reading.headingFiltered;
+  float targetPosition = ((int)initialHeading + degrees)%360;
+  int headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
+  int targetQuadrant = getQuadrant(targetPosition);
+   
+  
+  while(
+          (robotState.mpu9265Reading.headingDegrees < targetPosition) || (headingQuadrant != targetQuadrant)
+  
+  ){
+    readFromMPU9265();
+    spinMotors(175,175,-175,-175); 
+    serialprintf("init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
+    headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
+  }
+
     killMotors();
   
   }
 
+void spinMotorsToRotateAntiClockwise(int degrees){
+    // give some time to the filter 
+    for(int i=0; i<100;i++){
+      readFromMPU9265();
+    }
+    
+  float initialHeading = robotState.mpu9265Reading.headingFiltered;
+  float targetPosition = ((int)initialHeading - degrees+20);
+  if(targetPosition<0)
+    targetPosition=360+targetPosition;
+  int headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
+  int targetQuadrant = getQuadrant(targetPosition);
+   
   
+  while(
+          (robotState.mpu9265Reading.headingDegrees > targetPosition) || (headingQuadrant != targetQuadrant)
+  
+  ){
+    readFromMPU9265();
+    spinMotors(-175,-175,175,175); 
+    serialprintf("init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
+    headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
+  }
+
+    killMotors();
+  
+  }
+  
+ /* 
+void spinMotorsToRotateClockwise(int degrees){
+    // give some time to the filter 
+    for(int i=0; i<100;i++){
+      readFromMPU9265();
+    }
+    
+  float initialHeading = robotState.mpu9265Reading.headingFiltered;
+  float targetPosition = initialHeading + degrees+20;
+  if(targetPosition>360)
+    targetPosition=360;
+    
+  float prevHeading = initialHeading;
+  
+  int wasHeadingAround360=0;
+  int headingAround360 = isAround360(robotState.mpu9265Reading.headingFiltered);
+  
+  while(
+          ((robotState.mpu9265Reading.headingFiltered <5 || robotState.mpu9265Reading.headingFiltered >355) || 
+          robotState.mpu9265Reading.headingFiltered < targetPosition) &&
+          !(targetPosition==360 && robotState.mpu9265Reading.headingFiltered>5  && robotState.mpu9265Reading.headingFiltered<90)
+  
+  ){
+    wasHeadingAround360 = headingAround360;
+    readFromMPU9265();
+    spinMotors(175,175,-175,-175);
+    headingAround360 = isAround360(robotState.mpu9265Reading.headingFiltered); 
+    serialprintf("init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
+    
+  }
+
+    killMotors();
+  
+  }
+
+  void rotateRobotClockWise(int degrees){
+    
+        // give some time to the filter 
+        for(int i=0; i<100;i++){
+          readFromMPU9265();
+        }
+    float targetHeading=robotState.mpu9265Reading.headingFiltered+degrees;
+    serialprintf("\n\n\ntargetHeading: %d\n\n",targetHeading);
+    if(targetHeading>360){
+        Serial.println("\n\n\ntriggered1 \n\n\n");
+            
+        // give some time to the filter 
+        for(int i=0; i<10;i++){
+          readFromMPU9265();
+        }
+        spinMotorsToRotateClockwise(360-robotState.mpu9265Reading.headingFiltered);
+        Serial.println("\n\n\ntriggered \n\n\n");
+            
+        // give some time to the filter 
+        for(int i=0; i<50;i++){
+          readFromMPU9265();
+        }
+        spinMotorsToRotateClockwise(targetHeading-400);
+      }
+    else{
+        Serial.println("\n\n\ntriggered2 \n\n\n");
+        spinMotorsToRotateClockwise(degrees);
+      }
+    
+    }
+
+  */

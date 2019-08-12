@@ -14,7 +14,12 @@
 #define ACC_FULL_SCALE_4_G 0x08
 #define ACC_FULL_SCALE_8_G 0x10
 #define ACC_FULL_SCALE_16_G 0x18
- 
+
+#define SMOOTHING_FACTOR 10
+int mag_read_index =0;
+float heading_readings[SMOOTHING_FACTOR];
+float total_heading;
+
 // This function read Nbytes bytes from I2C device at address Address. 
 // Put read bytes starting at register Register in the Data array. 
 void I2Cread(uint8_t Address, uint8_t Register, uint8_t Nbytes, uint8_t* Data)
@@ -145,9 +150,27 @@ void readFromMPU9265(){
       heading -= 2*PI;
      
     // Convert radians to degrees for readability.
-     robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI; 
-
-     
+    robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI; 
+    robotState.mpu9265Reading.headingFiltered = robotState.mpu9265Reading.headingFiltered*0.25 + robotState.mpu9265Reading.headingDegrees*0.75; 
+    /*
+    total_heading = total_heading - heading_readings[mag_read_index];
+    // read from the sensor:
+    heading_readings[mag_read_index] = robotState.mpu9265Reading.headingDegrees;
+    // add the reading to the total:
+    total_heading = total_heading + heading_readings[mag_read_index];
+    
+    // advance to the next position in the array:
+    mag_read_index++;
+  
+    // if we're at the end of the array...
+    if (mag_read_index >= SMOOTHING_FACTOR) {
+      // ...wrap around to the beginning:
+      mag_read_index = 0;
+    }
+  
+    // calculate the average:
+    robotState.mpu9265Reading.headingFiltered = total_heading / SMOOTHING_FACTOR;  
+     */
 }
 
 void printAccelerometerReadings(){
@@ -163,8 +186,8 @@ void printGyroscopeReadings(){
   }
 
 void printMagnetometerReadings(){
-  serialprintf("mx: %d, my: %d, mz: %d, Heading: %f degrees", 
-                robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz, robotState.mpu9265Reading.headingDegrees);
+  serialprintf("mx: %d, my: %d, mz: %d, Heading: %f degrees, HeadingFiltered: %f Quadrant %d", 
+                robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz, robotState.mpu9265Reading.headingDegrees, robotState.mpu9265Reading.headingFiltered, isAround360(robotState.mpu9265Reading.headingFiltered));
   
   }
   
