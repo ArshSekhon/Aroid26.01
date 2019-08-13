@@ -61,7 +61,7 @@ void loop() {
      
   //spinMotorsToRotate90DegreeClockwise()
   if(rot==1){
-    spinMotorsToRotateClockwise(180);
+    spinMotorsToRotateClockwise(170);
     rot =0;
     }
   //delay(1000);
