@@ -45,7 +45,7 @@ def make_points(frame, line):
     height, width = frame.shape
     slope, intercept = line
     y1 = height  # bottom of the frame
-    y2 = int(y1 * 1 / 6)  # make points from middle of the frame down
+    y2 = int(y1 * 1 / 2)  # make points from middle of the frame down
 
     # bound the coordinates within the frame
     x1 = max(-width, min(2 * width, int((y1 - intercept) / slope)))
@@ -129,11 +129,11 @@ def find_heading_lines(img, lanes):
     
     return (totalX/2, totalY/2)
 
-def draw_lines(img, lines):
+def draw_lines(img, lines, color=[0,255,0]):
     try:
         for line in lines:
             coords = line[0]
-            cv2.line(img, (coords[0],coords[1]), (coords[2],coords[3]), [0,255,0], 3)
+            cv2.line(img, (coords[0],coords[1]), (coords[2],coords[3]),color, 3)
     except:
         pass
  
@@ -145,11 +145,18 @@ def process_img(original_image):
     #processed_img= do_segment(processed_img)
     #edges
     #processed_img = do_segment(processed_img)
-    hough_lines = cv2.HoughLinesP(processed_img, 1, np.pi/180, 180, minLineLength=50, maxLineGap=5)
+    hough_lines = cv2.HoughLinesP(processed_img, 1, np.pi/180, 180, minLineLength=15, maxLineGap=10)
+
     lane_lines    = average_slope_intercept(processed_img, hough_lines)
     original_image_with_lanes=original_image
+    original_image_with_hough_lines=original_image
+
     draw_lines(original_image_with_lanes, lane_lines) 
+    draw_lines(original_image_with_hough_lines, hough_lines) 
+    draw_lines(original_image_with_hough_lines, lane_lines, [255,0,0]) 
     #output = cv2.addWeighted(original_image, 0.9, original_image_with_lanes, 1, 1)
+  
+    cv2.imshow('res',original_image_with_hough_lines)
 
     heading_lanes=find_heading_lines(original_image_with_lanes, lane_lines)
     
@@ -181,20 +188,19 @@ def main():
         
         
         frame, (heading_x, heading_y) = process_img(frame)  
-        filtered_heading_x = filtered_heading_x*0.85+heading_x*0.15
-        filtered_heading_y = filtered_heading_y*0.85+heading_y*0.15
+        filtered_heading_x = filtered_heading_x*0.9+heading_x*0.1
+        filtered_heading_y = filtered_heading_y*0.9+heading_y*0.1
         print(filtered_heading_x, filtered_heading_y)
         
         cv2.line(frame, ((int)(filtered_heading_x),0), ((int)(filtered_heading_x), (int)(frame.shape[0])), [0,0,255], 3)
         cv2.line(frame, (0, (int)(filtered_heading_y)), ((int)(frame.shape[1]), (int)(filtered_heading_y)), [0,0,255], 3)
 
-        cv2.imshow("Frame", frame)
-
+        cv2.imshow("Frame", frame) 
         if(tick<20):
             tick=tick+1
         else:
             if(waiting_ticks==0):
-                if(filtered_heading_x>(frame.shape[1]/2-50) and filtered_heading_x<(frame.shape[1]/2+50)):
+                if(filtered_heading_x>(frame.shape[1]/2-100) and filtered_heading_x<(frame.shape[1]/2+100)):
                     print("go straight") 
                     spinMotors(90,90,90,90)
                     time.sleep(1)
@@ -203,20 +209,29 @@ def main():
                     waiting_ticks=5  
                 elif(filtered_heading_x<150 ):
                     print("turn left")  
-                    spinMotors(-150,-150,150,150) 
+                    spinMotors(-200,-200,200,200) 
                     time.sleep(0.15)
                     spinMotors(0,0,0,0)
-                    waiting_ticks=20            
+                    waiting_ticks=15            
                 elif(filtered_heading_x>frame.shape[1]-150 ):
                     print("turn right") 
-                    spinMotors(150,150,-150,-150) 
+                    spinMotors(200,200,-200,-200) 
                     time.sleep(.15)
                     spinMotors(0,0,0,0)
-                    waiting_ticks=20 
-                            
-                else:
-                    print("stop") 
+                    waiting_ticks=15         
+                elif(filtered_heading_x<(frame.shape[1]/2-100)): 
+                    print("turn right") 
+                    spinMotors(200,200,-200,-200) 
+                    time.sleep(.05)
                     spinMotors(0,0,0,0)
+                    waiting_ticks=10   
+
+                elif(filtered_heading_x>(frame.shape[1]/2+100)): 
+                    print("turn left")  
+                    spinMotors(-200,-200,200,200) 
+                    time.sleep(0.05)
+                    spinMotors(0,0,0,0)
+                    waiting_ticks=10   
             else:
                 pass    
  
@@ -224,8 +239,7 @@ def main():
         waiting_ticks= waiting_ticks-1
         if(waiting_ticks<0):
             waiting_ticks=0
-
-
+ 
         key = cv2.waitKey(1) & 0xFF
 
         # if the 'q' key is pressed, stop the loop
