@@ -1,5 +1,4 @@
-from collections import deque
-import paho.mqtt.client as mqtt
+from collections import deque 
 import cv2
 from cv2 import VideoCapture
 import urllib.request
@@ -248,4 +247,7 @@ def main():
 
         # cleanup the camera and close any open windows
 
-main()
+try:
+    main()
+except KeyboardInterrupt:
+    spinMotors(0,0,0,0)
