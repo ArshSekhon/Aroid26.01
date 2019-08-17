@@ -153,7 +153,7 @@ def process_img(original_image):
     draw_lines(original_image_with_lanes, lane_lines) 
     draw_lines(original_image_with_hough_lines, hough_lines) 
     draw_lines(original_image_with_hough_lines, lane_lines, [255,0,0]) 
-    #output = cv2.addWeighted(original_image, 0.9, original_image_with_lanes, 1, 1)
+    # output = cv2.addWeighted(original_image, 0.9, original_image_with_lanes, 1, 1)
   
     cv2.imshow('res',original_image_with_hough_lines)
 

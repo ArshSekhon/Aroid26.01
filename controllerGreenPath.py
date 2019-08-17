@@ -6,7 +6,8 @@ import pickle
 import time
 
 import matplotlib.pyplot as plt
- 
+
+
 def segment_roi(frame, polygons):
     height = frame.shape[0]
     width = frame.shape[1]
@@ -14,6 +15,7 @@ def segment_roi(frame, polygons):
     cv2.fillPoly(mask, polygons, 255)
     segment = cv2.bitwise_and(frame, mask)
     return segment
+
 
 def draw_lines(img, lines, color=[0,0,255]):
     try:
@@ -23,8 +25,13 @@ def draw_lines(img, lines, color=[0,0,255]):
     except:
         pass
 
-sign = lambda x: (1, -1)[x < 0]
-slope = lambda x1, y1, x2, y2: (y2 * 1.0 - y1) / (x2 * 1.0 - x1)
+
+def sign(x):
+    return (1, -1)[x < 0]
+
+
+def slope(x1, y1, x2, y2):
+    return (y2 * 1.0 - y1) / (x2 * 1.0 - x1)
 
 
 def find_heading_lines(img, lanes, last_heading, heading_x_from_hist):
@@ -58,7 +65,6 @@ def find_heading_lines(img, lanes, last_heading, heading_x_from_hist):
                     totalX = totalX + x2
                 else:
                     totalX = totalX + x1
-
         return (totalX / 2, totalY / 2)
     elif (len(lanes)==1):
         x1, y1, x2, y2 = lanes[0][0][0], lanes[0][0][1], lanes[0][0][2], lanes[0][0][3]
@@ -75,7 +81,7 @@ def find_heading_lines(img, lanes, last_heading, heading_x_from_hist):
             return current_heading
 
     else:
-        return (heading_x_from_hist, )
+        return (heading_x_from_hist, img.shape[0]//2)
 
 
 def process_img(original_image, last_heading):
@@ -84,17 +90,14 @@ def process_img(original_image, last_heading):
     cv2.imshow("hue", processed_img[:,:,0])
     cv2.imshow("saturation", processed_img[:,:,1])
     cv2.imshow("val", processed_img[:,:,2])
-
-    green_mask = cv2.inRange(processed_img, (30, 10, 110), (90, 255, 255))
+    sensitivity = 50
+    green_mask = cv2.inRange(processed_img, (60 - sensitivity, 10, 10), (60 + sensitivity, 255, 255))
     in_mask = green_mask>0
     green = np.zeros_like(processed_img, np.uint8)
     green[in_mask] = processed_img[in_mask]
     cv2.imshow("road mask", green)
 
-
-    processed_img = cv2.GaussianBlur(green, (15,15), 0 )
-
-
+    processed_img = cv2.GaussianBlur(green, (7,7), 0 )
     processed_img = cv2.Canny(processed_img, threshold1=110, threshold2=200)
     processed_img = cv2.GaussianBlur(processed_img, (3,3), 0 )
 
@@ -159,8 +162,6 @@ def process_img(original_image, last_heading):
     return original_image, heading_point
 
 
-
-
 def make_points(frame, line):
     height, width = frame.shape
     slope, intercept = line
@@ -171,6 +172,7 @@ def make_points(frame, line):
     x1 = max(-width, min(2 * width, int((y1 - intercept) / slope)))
     x2 = max(-width, min(2 * width, int((y2 - intercept) / slope)))
     return [[x1, y1, x2, y2]]
+
 
 def average_slope_intercept(frame, line_segments):
     """
@@ -207,12 +209,10 @@ def average_slope_intercept(frame, line_segments):
     left_fit_average = np.average(left_fit, axis=0)
     right_fit_average = np.average(right_fit, axis=0)
 
-
     if len(left_fit) > 0 :
         avg_slope_left,_ = left_fit_average
     if len(right_fit) > 0 :
         avg_slope_right,_ = right_fit_average
-
 
     if len(left_fit) > 0 and len(right_fit) > 0 and not sign(avg_slope_left)==sign(avg_slope_right):
         lane_lines.append(make_points(frame, left_fit_average))
@@ -226,6 +226,7 @@ def average_slope_intercept(frame, line_segments):
 
     return lane_lines
 
+
 def spinMotors(lf, lr, rf, rr):
     url = "http://192.168.0.99/serialInput"
 
@@ -234,7 +235,10 @@ def spinMotors(lf, lr, rf, rr):
 
     response = requests.request("POST", url, data=payload, headers=headers)
 
+
 frame_to_save = None
+
+
 def main():
     resp=urllib.request.urlopen("http://192.168.0.100/control?var=framesize&val=6")
     h, w = 480,640
@@ -255,7 +259,7 @@ def main():
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
         frame=cv2.rotate(frame, cv2.ROTATE_180)
         frame = cv2.undistort(frame, mtx, dist, None, newcameramtx)
-        #crop the frame to get rid of distortion
+        # crop the frame to get rid of distortion
         x, y, w, h = roi
         frame = frame[y:y + h, x:x + w]
         global frame_to_save
@@ -278,34 +282,22 @@ def main():
                  3)
 
         cv2.imshow("Frame", frame)
-        if (tick < 20):
+        if tick < 20:
             tick = tick + 1
         else:
             if (waiting_ticks == 0):
 
-                if (filtered_heading_x > (frame.shape[1] / 2 - 100) and filtered_heading_x < (
-                        frame.shape[1] / 2 + 100)):
+                if (filtered_heading_x > (frame.shape[1] / 2 - 100) and filtered_heading_x < (frame.shape[1] / 2 + 100)):
                     print("go straight")
-                    #spinMotors(90, 90, 90, 90)
-                    #time.sleep(1)
-                    #spinMotors(0, 0, 0, 0)
+                    spinMotors(90, 90, 90, 90)
+                    time.sleep(1)
+                    spinMotors(0, 0, 0, 0)
 
-                    waiting_ticks = 5
+                    waiting_ticks = 3
                 elif (filtered_heading_x < 150):
-                    #print("turn left")
-                    #spinMotors(-200, -200, 200, 200)
-                    #time.sleep(0.15)
-                    #spinMotors(0, 0, 0, 0)
-
-                    #spinMotors(90, 90, 90, 90)
-                    #time.sleep(0.5)
-                    #spinMotors(0, 0, 0, 0)
-
-                    waiting_ticks = 15
-                elif (filtered_heading_x > frame.shape[1] - 150):
-                    print("turn right")
+                    print("turn left")
                     spinMotors(-200, -200, 200, 200)
-                    time.sleep(.15)
+                    time.sleep(0.15)
                     spinMotors(0, 0, 0, 0)
 
                     spinMotors(90, 90, 90, 90)
@@ -313,6 +305,17 @@ def main():
                     spinMotors(0, 0, 0, 0)
 
                     waiting_ticks = 15
+                elif (filtered_heading_x > frame.shape[1] - 150):
+                    print("turn right")
+                    spinMotors(200, 200, -200, -200)
+                    time.sleep(.15)
+                    spinMotors(0, 0, 0, 0)
+
+                    spinMotors(90, 90, 90, 90)
+                    time.sleep(0.5)
+                    spinMotors(0, 0, 0, 0)
+
+                    waiting_ticks = 7
                 elif (filtered_heading_x < (frame.shape[1] / 2 - 100)):
                     print("turn left")
                     spinMotors(-200, -200, 200, 200)
@@ -323,25 +326,25 @@ def main():
                     time.sleep(0.5)
                     spinMotors(0, 0, 0, 0)
 
-                    waiting_ticks = 10
+                    waiting_ticks = 7
 
                 elif (filtered_heading_x > (frame.shape[1] / 2 + 100)):
                     print("turn right")
-                    #spinMotors(200, 200, -200, -200)
-                    #time.sleep(0.05)
-                    #spinMotors(0, 0, 0, 0)
+                    spinMotors(200, 200, -200, -200)
+                    time.sleep(0.05)
+                    spinMotors(0, 0, 0, 0)
 
-                    #spinMotors(90, 90, 90, 90)
-                    #time.sleep(0.5)
-                    #spinMotors(0, 0, 0, 0)
+                    spinMotors(90, 90, 90, 90)
+                    time.sleep(0.5)
+                    spinMotors(0, 0, 0, 0)
 
-                    waiting_ticks = 10
+                    waiting_ticks = 7
 
 
             else:
                 pass
         waiting_ticks = waiting_ticks - 1
-        if (waiting_ticks < 0):
+        if waiting_ticks < 0:
             waiting_ticks = 0
 
         key = cv2.waitKey(1) & 0xFF
@@ -351,6 +354,8 @@ def main():
             break
 
         # cleanup the camera and close any open windows
+
+
 try:
     main()
 except KeyboardInterrupt:
