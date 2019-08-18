@@ -23,14 +23,16 @@ void handleHardwareSerialQueries(HardwareSerial &serial){
           positionRobotHead(robotState.cameraBasePos, robotState.cameraArmPos);
         }
         else if(inputType=="ROT_C"){
-          int degreesToRot = serial.readStringUntil(';').toInt();     
+          int degreesToRot = serial.readStringUntil(';').toInt();      
+          int speed = serial.readStringUntil(';').toInt();    
           serialprintf(serial, "Rotating Clockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
-          spinMotorsToRotateClockwise(degreesToRot);
+          spinMotorsToRotateClockwise(degreesToRot,speed);
         }
         else if(inputType=="ROT_A"){
-          int degreesToRot = serial.readStringUntil(';').toInt();     
+          int degreesToRot = serial.readStringUntil(';').toInt();  
+          int speed = serial.readStringUntil(';').toInt();        
           serialprintf(serial, "Rotating Anticlockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
-          spinMotorsToRotateAntiClockwise(degreesToRot);
+          spinMotorsToRotateAntiClockwise(degreesToRot,speed);
         }
         else if(inputType=="SET_TARGET_DIST"){
           float distance = serial.readStringUntil(';').toInt();  

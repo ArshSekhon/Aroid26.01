@@ -2,11 +2,14 @@ void setTargetDistance(float distance, int speed){
     robotState.targetDistance = distance;
     robotState.startDistance = max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR);
     spinMotors(speed,speed,speed,speed);
+    killIfTargetDistanceAcheived();
  }
 
 void killIfTargetDistanceAcheived()
-{
-     if(max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR)-robotState.startDistance>robotState.targetDistance){
+{     
+      float currDist = max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR);
+      serialprintf(Serial,"Curr: %f Start: %f Target: %f", currDist, robotState.startDistance, robotState.targetDistance);
+     if(currDist-robotState.startDistance>robotState.targetDistance){
         killMotors();
         robotState.targetDistance = 0;
       }
@@ -113,7 +116,7 @@ void killMotors(){
   }
   
 
-void spinMotorsToRotateClockwise(int degrees){
+void spinMotorsToRotateClockwise(int degrees, int speed){
     // give some time to the filter 
     for(int i=0; i<100;i++){
       readFromMPU9265();
@@ -130,7 +133,7 @@ void spinMotorsToRotateClockwise(int degrees){
   
   ){
     readFromMPU9265();
-    spinMotors(175,175,-175,-175); 
+    spinMotors(speed,speed,-speed,-speed); 
     serialprintf(Serial,"init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
     headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
   }
@@ -139,7 +142,7 @@ void spinMotorsToRotateClockwise(int degrees){
   
   }
 
-void spinMotorsToRotateAntiClockwise(int degrees){
+void spinMotorsToRotateAntiClockwise(int degrees, int speed){
     // give some time to the filter 
     for(int i=0; i<100;i++){
       readFromMPU9265();
@@ -154,11 +157,11 @@ void spinMotorsToRotateAntiClockwise(int degrees){
    
   
   while(
-          (robotState.mpu9265Reading.headingDegrees > targetPosition) || (headingQuadrant != targetQuadrant)
+          (robotState.mpu9265Reading.headingFiltered > targetPosition) || (headingQuadrant != targetQuadrant)
   
   ){
     readFromMPU9265();
-    spinMotors(-175,-175,175,175); 
+    spinMotors(-speed,-speed,speed,speed); 
     serialprintf(Serial, "init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
     headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
   }

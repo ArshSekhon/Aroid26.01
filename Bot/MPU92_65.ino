@@ -121,8 +121,8 @@ void readFromMPU9265(){
     int16_t my=(Mag[1]<<8 | Mag[0]);
     int16_t mz=(Mag[5]<<8 | Mag[4]);
     
-    robotState.mpu9265Reading.mx= mx * 42.0/(1630.0-1430.0) + 21 - 1630*42.0/(1630.0-1430.0);
-    robotState.mpu9265Reading.my= my *42.0/(263.0-47.0) + 21.0 -(263.0*42.0/(263.0-47.0));
+    robotState.mpu9265Reading.mx= (mx * 42.0/(1630.0-1430.0) + 21 - 1630*42.0/(1630.0-1430.0))*23/21-9.85714286;
+    robotState.mpu9265Reading.my= (my *42.0/(263.0-47.0) + 21.0 -(263.0*42.0/(263.0-47.0)))* 23/26;
     
     
     // Hold the module so that Z is pointing 'up' and you can measure the heading with x&y
@@ -145,8 +145,8 @@ void readFromMPU9265(){
       heading -= 2*PI;
      
     // Convert radians to degrees for readability.
-    robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI - 90; 
-    robotState.mpu9265Reading.headingFiltered = robotState.mpu9265Reading.headingFiltered*0.25 + robotState.mpu9265Reading.headingDegrees*0.75; 
+    robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI; 
+    robotState.mpu9265Reading.headingFiltered = robotState.mpu9265Reading.headingFiltered*0.2 + robotState.mpu9265Reading.headingDegrees*0.8; 
     /*
     total_heading = total_heading - heading_readings[mag_read_index];
     // read from the sensor:
@@ -199,6 +199,6 @@ void printAllMPU9265Readings(){
                 robotState.mpu9265Reading.ax, robotState.mpu9265Reading.ay, robotState.mpu9265Reading.az, 
                 robotState.mpu9265Reading.gx, robotState.mpu9265Reading.gy, robotState.mpu9265Reading.gz, 
                 robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz,
-                robotState.mpu9265Reading.headingDegrees,  "");
+                robotState.mpu9265Reading.headingFiltered,  "");
   
   }

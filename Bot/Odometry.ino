@@ -36,19 +36,19 @@ void initOdometry(){
 void timerOdometryAndMPU()
 {
   intFlag=true;
-  if(++odotimerTicks>100){
+  if(++odotimerTicks>10){
       odotimerTicks=0;
       Timer1.detachInterrupt();  //stop the timer
-      robotState.rpmLF = (counterLF * 3);  // divide by number of holes in Disc
-      robotState.rpmRF = (counterRF * 3);  // divide by number of holes in Disc
-      robotState.rpmLR = (counterLR * 3);  // divide by number of holes in Disc
-      robotState.rpmRR = (counterRR * 3);  // divide by number of holes in Disc
-      
+      robotState.rpmLF = (counterLF * 30);  // divide by number of holes in Disc
+      robotState.rpmRF = (counterRF * 30);  // divide by number of holes in Disc
+      robotState.rpmLR = (counterLR * 30);  // divide by number of holes in Disc
+      robotState.rpmRR = (counterRR * 30);  // divide by number of holes in Disc
+      /*
       serialprintf(Serial, "{ \"WheelRPM:\" {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist:\" { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}}%s", 
       counterLF,counterLR,robotState.rpmRF,robotState.rpmRR,
       robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
       ""
-      );/**/
+      );*/
       
       robotState.distLF += (counterLF * DISTANCE_PER_ENCODER_SLOT_IN_CM);
       robotState.distLR += (counterLR * DISTANCE_PER_ENCODER_SLOT_IN_CM); 

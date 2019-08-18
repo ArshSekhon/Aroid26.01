@@ -40,10 +40,9 @@ void loop() {
   
   // if robot is heading for a target distance then kill motors if has accomplished it
   if(robotState.targetDistance!=0)
-      killIfTargetDistanceAcheived();
-
-      
-   //displayInfoScreen();
+      killIfTargetDistanceAcheived(); 
+   printAllMPU9265ReadingsToSerial(Serial);   
+   displayInfoScreen();
 }
 
 void avoidObstacles(){
@@ -51,6 +50,6 @@ void avoidObstacles(){
     if(getDistance()<15){
         playDangerSound();
         killMotors();
-        spinMotorsToRotateClockwise(180);
+        spinMotorsToRotateClockwise(180,200);
       }
   }
