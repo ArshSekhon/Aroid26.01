@@ -1,3 +1,18 @@
+void setTargetDistance(float distance, int speed){
+    robotState.targetDistance = distance;
+    robotState.startDistance = max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR);
+    spinMotors(speed,speed,speed,speed);
+ }
+
+void killIfTargetDistanceAcheived()
+{
+     if(max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR)-robotState.startDistance>robotState.targetDistance){
+        killMotors();
+        robotState.targetDistance = 0;
+      }
+}
+
+
 void spinMotorRightFront(int motorSpeed)                       //function for driving the right motor
 {
   if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
@@ -90,7 +105,11 @@ void spinMotors(int lfMotorSpeed, int lrMotorSpeed, int rfMotorSpeed, int rrMoto
   }
 void killMotors(){
   
-      spinMotors(0,0,0,0);
+    spinMotors(0,0,0,0);
+    robotState.motorSpeedLF = 0;       
+    robotState.motorSpeedLR = 0;         
+    robotState.motorSpeedRF = 0;         
+    robotState.motorSpeedRR = 0; 
   }
   
 

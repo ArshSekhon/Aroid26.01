@@ -31,10 +31,18 @@ void loop() {
   updateStateFromSensors(); 
   handleHardwareSerialQueries(Serial);
   handleHardwareSerialQueries(Serial3);
-  Serial.println(getDistance());
+  
+  //Serial.println(getDistance());
+  
   //if obstacle avoidance is active
   if(digitalRead(SWITCH_PIN) == LOW)
       avoidObstacles();
+  
+  // if robot is heading for a target distance then kill motors if has accomplished it
+  if(robotState.targetDistance!=0)
+      killIfTargetDistanceAcheived();
+
+      
    //displayInfoScreen();
 }
 

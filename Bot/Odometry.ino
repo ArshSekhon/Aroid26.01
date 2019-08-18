@@ -1,4 +1,4 @@
-#define DISTANCE_PER_ENCODER_SLOT_IN_CM 1.04
+#define DISTANCE_PER_ENCODER_SLOT_IN_CM 0.2501
 unsigned int counterLF=0, 
              counterRF=0, 
              counterLR=0, 
@@ -43,16 +43,16 @@ void timerOdometryAndMPU()
       robotState.rpmRF = (counterRF * 3);  // divide by number of holes in Disc
       robotState.rpmLR = (counterLR * 3);  // divide by number of holes in Disc
       robotState.rpmRR = (counterRR * 3);  // divide by number of holes in Disc
-      /*
+      
       serialprintf(Serial, "{ \"WheelRPM:\" {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist:\" { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}}%s", 
       counterLF,counterLR,robotState.rpmRF,robotState.rpmRR,
       robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
       ""
-      );*/
+      );/**/
       
       robotState.distLF += (counterLF * DISTANCE_PER_ENCODER_SLOT_IN_CM);
-      robotState.distLR += (counterRF * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
-      robotState.distRF += (counterLR * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
+      robotState.distLR += (counterLR * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
+      robotState.distRF += (counterRF * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
       robotState.distRR += (counterRR * DISTANCE_PER_ENCODER_SLOT_IN_CM);
       
       

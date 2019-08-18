@@ -19,18 +19,24 @@ void handleHardwareSerialQueries(HardwareSerial &serial){
         else if(inputType=="HEAD_POS"){
           robotState.cameraBasePos = serial.readStringUntil(';').toInt();          
           robotState.cameraArmPos = serial.readStringUntil(';').toInt(); 
-          serialprintf(Serial, "Servo Moved --> Head: %d Arm %d", robotState.cameraBasePos, robotState.cameraArmPos );
+          serialprintf(serial, "Servo Moved --> Head: %d Arm %d", robotState.cameraBasePos, robotState.cameraArmPos );
           positionRobotHead(robotState.cameraBasePos, robotState.cameraArmPos);
         }
         else if(inputType=="ROT_C"){
-          int degreesToRot = Serial.readStringUntil(';').toInt();     
-          serialprintf(Serial, "Rotating Clockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
+          int degreesToRot = serial.readStringUntil(';').toInt();     
+          serialprintf(serial, "Rotating Clockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
           spinMotorsToRotateClockwise(degreesToRot);
         }
         else if(inputType=="ROT_A"){
-          int degreesToRot = Serial.readStringUntil(';').toInt();     
-          serialprintf(Serial, "Rotating Anticlockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
+          int degreesToRot = serial.readStringUntil(';').toInt();     
+          serialprintf(serial, "Rotating Anticlockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
           spinMotorsToRotateAntiClockwise(degreesToRot);
+        }
+        else if(inputType=="SET_TARGET_DIST"){
+          float distance = serial.readStringUntil(';').toInt();  
+          int speed = serial.readStringUntil(';').toInt();        
+          setTargetDistance(distance, speed);
+          serialprintf(serial, "Heading for distance: %f cm", robotState.targetDistance );
         }
         else if(inputType=="READ"){
           String type = serial.readStringUntil(';');

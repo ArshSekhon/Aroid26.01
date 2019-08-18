@@ -1,4 +1,3 @@
-
 #define ARDBUFFER 600
 #include <stdarg.h>
 #include <Arduino.h>
@@ -63,4 +62,8 @@ int isAround360(int degrees){
 int getQuadrant(int degrees){
       return degrees/90;  
   
+  }
+
+float max4(float x1, float x2, float x3, float x4){
+  return max(max(x1,x2),max(x3,x4));
   }

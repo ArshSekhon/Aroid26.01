@@ -40,11 +40,8 @@
 #define TEMP_UNITS_FAHRENHEIT 1
 #define TEMP_UNITS_KELVIN 2
 
-
-
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64 
-
 
 #define ARDUINO_IP "192.168.0.99"
 #define CAMERA_IP "192.168.0.100"
@@ -73,13 +70,19 @@ struct RobotState{
     // record RPM
     volatile int rpmLF=0, rpmLR=0, rpmRF=0, rpmRR = 0;
     // odometry
-    volatile double distLF=0, distLR=0, distRF=0, distRR = 0;
+    volatile double distLF=0, distLR=0, distRF=0, distRR = 0; 
+    
     // temperature
     float temperatureInC=0;
     // distance from ultrasonic sensor
     float distanceUltrasonic=0;
     // light levels
     float lightLevels=0;
+    
+    //start Distance
+    float startDistance=0;
+    //target Distance
+    float targetDistance=0;
     
     // struct to store the reading from the the MPU 9265
     MPU9265_Reading mpu9265Reading;
