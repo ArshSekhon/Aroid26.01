@@ -1,56 +1,68 @@
-
+#define DISTANCE_PER_ENCODER_SLOT_IN_CM 1.04
 unsigned int counterLF=0, 
              counterRF=0, 
              counterLR=0, 
              counterRR=0;
-
+volatile int odotimerTicks=0;
              
 void incCounterLF()
-{
+{ 
   counterLF++;
-  counterLF1++;
   
 } 
 void incCounterRF()
 {
   counterRF++;
-  counterRF1++;
 } 
 void incCounterLR()
 {
   counterLR++;
-  counterLR1++;
 } 
 void incCounterRR()
 {
   counterRR++;
-  counterRR1++;
 } 
 
 void initOdometry(){
-  Timer1.initialize(1000000); // set timer for 1sec
+  Timer1.initialize(10000); // set timer for 1sec
   attachInterrupt(digitalPinToInterrupt(ODOMETER_LEFT_FRONT_PIN), incCounterLF, RISING); 
   attachInterrupt(digitalPinToInterrupt(ODOMETER_LEFT_REAR_PIN), incCounterLR, RISING); 
   attachInterrupt(digitalPinToInterrupt(ODOMETER_RIGHT_FRONT_PIN), incCounterRF, RISING); 
   attachInterrupt(digitalPinToInterrupt(ODOMETER_RIGHT_REAR_PIN), incCounterRR, RISING); 
-  Timer1.attachInterrupt(timerOdometry ); // enable the timer
+  Timer1.attachInterrupt(timerOdometryAndMPU ); // enable the timer
+  
 }
 
-void timerOdometry()
+void timerOdometryAndMPU()
 {
-  Timer1.detachInterrupt();  //stop the timer
-  
-  robotState.rpmLF = (counterLF * 3);  // divide by number of holes in Disc
-  robotState.rpmRF = (counterRF * 3);  // divide by number of holes in Disc
-  robotState.rpmLR = (counterLR * 3);  // divide by number of holes in Disc
-  robotState.rpmRR = (counterRR * 3);  // divide by number of holes in Disc
-  
-  //serialprintf("Motor RPM ---> LF: %d rpm RF: %d rpm LR: %d rpm RR: %d rpm",robotState.rpmLF,robotState.rpmRF, robotState.rpmLR, robotState.rpmRR);
-  
-  counterLF=0, 
-  counterRF=0, 
-  counterLR=0, 
-  counterRR=0;
-  
-  Timer1.attachInterrupt( timerOdometry );  //enable the timer
+  intFlag=true;
+  if(++odotimerTicks>100){
+      odotimerTicks=0;
+      Timer1.detachInterrupt();  //stop the timer
+      robotState.rpmLF = (counterLF * 3);  // divide by number of holes in Disc
+      robotState.rpmRF = (counterRF * 3);  // divide by number of holes in Disc
+      robotState.rpmLR = (counterLR * 3);  // divide by number of holes in Disc
+      robotState.rpmRR = (counterRR * 3);  // divide by number of holes in Disc
+      /*
+      serialprintf(Serial, "{ \"WheelRPM:\" {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist:\" { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}}%s", 
+      counterLF,counterLR,robotState.rpmRF,robotState.rpmRR,
+      robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
+      ""
+      );*/
+      
+      robotState.distLF += (counterLF * DISTANCE_PER_ENCODER_SLOT_IN_CM);
+      robotState.distLR += (counterRF * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
+      robotState.distRF += (counterLR * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
+      robotState.distRR += (counterRR * DISTANCE_PER_ENCODER_SLOT_IN_CM);
+      
+      
+      counterLF=0, 
+      counterRF=0, 
+      counterLR=0, 
+      counterRR=0;
+    
+    
+      
+      Timer1.attachInterrupt( timerOdometryAndMPU );  //enable the timer
+  }
 }

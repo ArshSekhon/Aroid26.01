@@ -1,4 +1,8 @@
 void setup() {
+ 
+  pinMode(SONAR_TRIG_PIN, OUTPUT);
+  pinMode(SONAR_ECHO_PIN, INPUT);
+  
   // set switch pin to INPUT_PULLUP mode
   pinMode(SWITCH_PIN, INPUT_PULLUP);
   
@@ -36,7 +40,6 @@ void setup() {
   
   cameraBaseServo.attach(SERVO_BASE_PIN);
   cameraArmServo.attach(SERVO_ARM_PIN);
-  cameraBaseServo.write(90);
 
   
   //begin Serial communication on 9600 baud
@@ -46,9 +49,6 @@ void setup() {
   initOdometry();
   initMPU9265();
   
-  serialprintf("INTERRUPTS TABLE \nLF: %d, LR: %d, RF: %d, RR: %d", digitalPinToInterrupt(ODOMETER_LEFT_FRONT_PIN), digitalPinToInterrupt(ODOMETER_LEFT_REAR_PIN), digitalPinToInterrupt(ODOMETER_RIGHT_FRONT_PIN), digitalPinToInterrupt(ODOMETER_RIGHT_REAR_PIN));
-  
-
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
     Serial.println(F("SSD1306 allocation failed"));
@@ -63,9 +63,10 @@ void setup() {
   // Clear the buffer
   display.clearDisplay();
   display.display();
+  positionRobotHead(robotState.cameraBasePos, robotState.cameraArmPos);
   
-  serialprintf("Motor Speed: LF %d LR %d RF %d RR %d",robotState.motorSpeedLF,robotState.motorSpeedLR,robotState.motorSpeedRF,robotState.motorSpeedRR);
-  Serial.print("Setup Complete");
+  serialprintf(Serial,"Motor Speed: LF %d LR %d RF %d RR %d",robotState.motorSpeedLF,robotState.motorSpeedLR,robotState.motorSpeedRF,robotState.motorSpeedRR);
+  Serial.print(Serial, "Setup Complete");
 }
 
 

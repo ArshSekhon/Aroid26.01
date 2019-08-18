@@ -39,9 +39,43 @@ void handleSerialInput(){
    
   }
 
+ // API end point that can be used to read serial Input to the Arduino
+void handleSensorRead(){
+  // if there is no content to be forwarded to the Arduino then return status code 400
+   if( ! server.hasArg("sensorType") || server.arg("sensorType") == NULL) { 
+        server.send(400, "text/plain", "400: Invalid Request");
+        return;
+    }
+    // if there is an input in the body it would write it to the Serial output that would be read by the Arduino
+    else{
+      Serial.println(server.arg("sensorType"));
+      bool timeOut = 0;
+      int  waitDurationMill = 5000;
+      
+      unsigned long startTime = millis();
+      while(Serial.available()==0 && ! timeOut){
+        unsigned long currentTime = millis();
+        unsigned long elapsedTime = currentTime - startTime;
+        if(elapsedTime>waitDurationMill){
+            timeOut=1;
+            break;
+          }
+      }
+      if(!timeOut){
+        server.send(200, "text/plain", Serial.readStringUntil('\n'));
+        return;
+      }
+      else{
+        server.send(408, "text/plain", "Request timed out!");
+        return;
+      }
+    }
+   
+  }
+
 
 void setup() {
-  // put your setup code here, to run once:
+  // put your setup code here, to run once: 115200
   Serial.begin(115200);
   Serial.println();
 
@@ -64,10 +98,13 @@ void setup() {
   //set handlers for different API endpoints
   server.on("/", handleRoot);
   server.on("/serialInput", HTTP_POST, handleSerialInput); 
+  server.on("/sensorRead", HTTP_POST, handleSensorRead); 
   
   //set serial baud to 9600 as that is what is read from by Arduino as serial Input.
   Serial.end();
   Serial.begin(9600);
+  
+  Serial.println("WC,");
   //start the server
   server.begin(); 
 }

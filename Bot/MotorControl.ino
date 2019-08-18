@@ -1,10 +1,5 @@
 void spinMotorRightFront(int motorSpeed)                       //function for driving the right motor
 {
-  Serial.print(RAIN1);
-  Serial.print(",");
-  Serial.print(RAIN2);
-  Serial.print(",");
-  Serial.println(RPWMA);
   if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
   {
     digitalWrite(RAIN1, HIGH);                         //set pin 1 to high
@@ -23,7 +18,6 @@ void spinMotorRightFront(int motorSpeed)                       //function for dr
   analogWrite(RPWMA, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
 }
 
-/********************************************************************************/
 void spinMotorLeftFront(int motorSpeed)                       //function for driving the right motor
 {
   if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
@@ -44,7 +38,6 @@ void spinMotorLeftFront(int motorSpeed)                       //function for dri
   analogWrite(LPWMA, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
 }
 
-/********************************************************************************/
 void spinMotorLeftRear(int motorSpeed)                       //function for driving the right motor
 {
   if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
@@ -99,20 +92,8 @@ void killMotors(){
   
       spinMotors(0,0,0,0);
   }
-int isAround360(int degrees){
-    if((degrees<5 || degrees>355) )
-      return 1;
-    else
-      return 0;
-  }
-
-
-int getQuadrant(int degrees){
-      return degrees/90;  
   
-  }
 
-    
 void spinMotorsToRotateClockwise(int degrees){
     // give some time to the filter 
     for(int i=0; i<100;i++){
@@ -131,7 +112,7 @@ void spinMotorsToRotateClockwise(int degrees){
   ){
     readFromMPU9265();
     spinMotors(175,175,-175,-175); 
-    serialprintf("init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
+    serialprintf(Serial,"init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
     headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
   }
 
@@ -159,7 +140,7 @@ void spinMotorsToRotateAntiClockwise(int degrees){
   ){
     readFromMPU9265();
     spinMotors(-175,-175,175,175); 
-    serialprintf("init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
+    serialprintf(Serial, "init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
     headingQuadrant = getQuadrant(robotState.mpu9265Reading.headingDegrees);
   }
 
@@ -167,70 +148,3 @@ void spinMotorsToRotateAntiClockwise(int degrees){
   
   }
   
- /* 
-void spinMotorsToRotateClockwise(int degrees){
-    // give some time to the filter 
-    for(int i=0; i<100;i++){
-      readFromMPU9265();
-    }
-    
-  float initialHeading = robotState.mpu9265Reading.headingFiltered;
-  float targetPosition = initialHeading + degrees+20;
-  if(targetPosition>360)
-    targetPosition=360;
-    
-  float prevHeading = initialHeading;
-  
-  int wasHeadingAround360=0;
-  int headingAround360 = isAround360(robotState.mpu9265Reading.headingFiltered);
-  
-  while(
-          ((robotState.mpu9265Reading.headingFiltered <5 || robotState.mpu9265Reading.headingFiltered >355) || 
-          robotState.mpu9265Reading.headingFiltered < targetPosition) &&
-          !(targetPosition==360 && robotState.mpu9265Reading.headingFiltered>5  && robotState.mpu9265Reading.headingFiltered<90)
-  
-  ){
-    wasHeadingAround360 = headingAround360;
-    readFromMPU9265();
-    spinMotors(175,175,-175,-175);
-    headingAround360 = isAround360(robotState.mpu9265Reading.headingFiltered); 
-    serialprintf("init: %f current: %f targe: %f", initialHeading, robotState.mpu9265Reading.headingFiltered, targetPosition);
-    
-  }
-
-    killMotors();
-  
-  }
-
-  void rotateRobotClockWise(int degrees){
-    
-        // give some time to the filter 
-        for(int i=0; i<100;i++){
-          readFromMPU9265();
-        }
-    float targetHeading=robotState.mpu9265Reading.headingFiltered+degrees;
-    serialprintf("\n\n\ntargetHeading: %d\n\n",targetHeading);
-    if(targetHeading>360){
-        Serial.println("\n\n\ntriggered1 \n\n\n");
-            
-        // give some time to the filter 
-        for(int i=0; i<10;i++){
-          readFromMPU9265();
-        }
-        spinMotorsToRotateClockwise(360-robotState.mpu9265Reading.headingFiltered);
-        Serial.println("\n\n\ntriggered \n\n\n");
-            
-        // give some time to the filter 
-        for(int i=0; i<50;i++){
-          readFromMPU9265();
-        }
-        spinMotorsToRotateClockwise(targetHeading-400);
-      }
-    else{
-        Serial.println("\n\n\ntriggered2 \n\n\n");
-        spinMotorsToRotateClockwise(degrees);
-      }
-    
-    }
-
-  */

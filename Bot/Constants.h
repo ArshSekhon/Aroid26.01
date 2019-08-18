@@ -46,11 +46,18 @@
 #define SCREEN_HEIGHT 64 
 
 
+#define ARDUINO_IP "192.168.0.99"
+#define CAMERA_IP "192.168.0.100"
+#define NETWORK_GATEWAY  "192.168.0.1"
+#define SUBNET  "255.255.255.0"
+
+
 // I2C Addresses
 // 0x3C for screen
 // 0x68 for gyroscope
 #define SCREEN_I2C_ADDRESS 0x3C
 #define MPU9265_I2C_ADDRESS 0x68
+
 
 struct MPU9265_Reading{
     int ax=0,ay=0,az=0,
@@ -62,15 +69,18 @@ struct RobotState{
     // variables to hold motor speed
     int motorSpeedLF=0 ,motorSpeedLR=0, motorSpeedRF=0, motorSpeedRR = 0;
     // variables to hold servo positions
-    int cameraBasePos=90, cameraArmPos=170;
-    //record RPM
-    int rpmLF=0, rpmLR=0, rpmRF=0, rpmRR = 0;
+    int cameraBasePos=90, cameraArmPos=150;
+    // record RPM
+    volatile int rpmLF=0, rpmLR=0, rpmRF=0, rpmRR = 0;
+    // odometry
+    volatile double distLF=0, distLR=0, distRF=0, distRR = 0;
+    // temperature
+    float temperatureInC=0;
+    // distance from ultrasonic sensor
+    float distanceUltrasonic=0;
+    // light levels
+    float lightLevels=0;
+    
     // struct to store the reading from the the MPU 9265
     MPU9265_Reading mpu9265Reading;
 };
-
-
-unsigned long counterLF1=0, 
-             counterRF1=0, 
-             counterLR1=0, 
-             counterRR1=0;

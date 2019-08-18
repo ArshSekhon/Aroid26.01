@@ -69,8 +69,8 @@ void initMPU9265(){
      
     // Request continuous magnetometer measurements in 16 bits
     I2CwriteByte(MAG_ADDRESS,0x0A,0x16);
-    Timer1.initialize(10000); // initialize timer1, and set a 1/2 second period
-    Timer1.attachInterrupt(callback); // attaches callback() as a timer overflow interrupt
+    //Timer1.initialize(10000); // initialize timer1, and set a 1/2 second period
+    //Timer1.attachInterrupt(callback); // attaches callback() as a timer overflow interrupt
      
     // Store initial time
     ti=millis();
@@ -78,12 +78,7 @@ void initMPU9265(){
 }
  
 // Counter
-long int cpt=0;
-void callback()
-{
-  intFlag=true; 
-}
-
+long int cpt=0; 
 
 void readFromMPU9265(){
     while (!intFlag);
@@ -150,7 +145,7 @@ void readFromMPU9265(){
       heading -= 2*PI;
      
     // Convert radians to degrees for readability.
-    robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI; 
+    robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI - 90; 
     robotState.mpu9265Reading.headingFiltered = robotState.mpu9265Reading.headingFiltered*0.25 + robotState.mpu9265Reading.headingDegrees*0.75; 
     /*
     total_heading = total_heading - heading_readings[mag_read_index];
@@ -174,28 +169,36 @@ void readFromMPU9265(){
 }
 
 void printAccelerometerReadings(){
-  serialprintf("ax: %d, ay: %d, az: %d", 
+  serialprintf(Serial,"ax: %d, ay: %d, az: %d", 
                 robotState.mpu9265Reading.ax, robotState.mpu9265Reading.ay, robotState.mpu9265Reading.az);
   
   }
 
 void printGyroscopeReadings(){
-  serialprintf("gx: %d, gy: %d, gz: %d", 
+  serialprintf(Serial,"gx: %d, gy: %d, gz: %d", 
                 robotState.mpu9265Reading.gx, robotState.mpu9265Reading.gy, robotState.mpu9265Reading.gz);
   
   }
 
 void printMagnetometerReadings(){
-  serialprintf("mx: %d, my: %d, mz: %d, Heading: %f degrees, HeadingFiltered: %f Quadrant %d", 
+  serialprintf(Serial,"mx: %d, my: %d, mz: %d, Heading: %f degrees, HeadingFiltered: %f Quadrant %d", 
                 robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz, robotState.mpu9265Reading.headingDegrees, robotState.mpu9265Reading.headingFiltered, isAround360(robotState.mpu9265Reading.headingFiltered));
   
   }
   
 void printAllMPU9265Readings(){
-  serialprintf("ax: %d, ay: %d, az: %d, gx: %d, gy: %d, gz: %d, mx: %d, my: %d, mz: %d, Heading: %f degrees", 
+  serialprintf(Serial, "ax: %d, ay: %d, az: %d, gx: %d, gy: %d, gz: %d, mx: %d, my: %d, mz: %d, Heading: %f degrees", 
                 robotState.mpu9265Reading.ax, robotState.mpu9265Reading.ay, robotState.mpu9265Reading.az, 
                 robotState.mpu9265Reading.gx, robotState.mpu9265Reading.gy, robotState.mpu9265Reading.gz, 
                 robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz,
                 robotState.mpu9265Reading.headingDegrees);
+  
+  }
+ void printAllMPU9265ReadingsToSerial(HardwareSerial &serial){
+  serialprintf(serial, "{\"ax\": %d, \"ay:\" %d, \"az:\" %d, \"gx\": %d, \"gy\": %d, \"gz\": %d, \"mx\": %d, \"my\": %d, \"mz\": %d, \"Heading\": %f} %s", 
+                robotState.mpu9265Reading.ax, robotState.mpu9265Reading.ay, robotState.mpu9265Reading.az, 
+                robotState.mpu9265Reading.gx, robotState.mpu9265Reading.gy, robotState.mpu9265Reading.gz, 
+                robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz,
+                robotState.mpu9265Reading.headingDegrees,  "");
   
   }

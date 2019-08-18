@@ -1,9 +1,9 @@
 
-#define ARDBUFFER 16
+#define ARDBUFFER 600
 #include <stdarg.h>
 #include <Arduino.h>
 
-int serialprintf(char *str, ...)
+int serialprintf(HardwareSerial &serial, char *str, ...)
 {
   int i, count=0, j=0, flag=0;
   char temp[ARDBUFFER+1];
@@ -16,21 +16,21 @@ int serialprintf(char *str, ...)
     if(str[i]=='%')
     {
       temp[j] = '\0';
-      Serial.print(temp);
+      serial.print(temp);
       j=0;
       temp[0] = '\0';
 
       switch(str[++i])
       {
-        case 'd': Serial.print(va_arg(argv, int));
+        case 'd': serial.print(va_arg(argv, int));
                   break;
-        case 'l': Serial.print(va_arg(argv, long));
+        case 'l': serial.print(va_arg(argv, long));
                   break;
-        case 'f': Serial.print(va_arg(argv, double));
+        case 'f': serial.print(va_arg(argv, double));
                   break;
-        case 'c': Serial.print((char)va_arg(argv, int));
+        case 'c': serial.print((char)va_arg(argv, int));
                   break;
-        case 's': Serial.print(va_arg(argv, char *));
+        case 's': serial.print(va_arg(argv, char *));
                   break;
         default:  ;
       };
@@ -42,11 +42,25 @@ int serialprintf(char *str, ...)
       if(j==0) 
       {
         temp[ARDBUFFER] = '\0';
-        Serial.print(temp);
+        serial.print(temp);
         temp[0]='\0';
       }
     }
   };
-  Serial.println();
+  serial.println();
   return count + 1;
 }
+
+
+int isAround360(int degrees){
+    if((degrees<5 || degrees>355) )
+      return 1;
+    else
+      return 0;
+  }
+
+
+int getQuadrant(int degrees){
+      return degrees/90;  
+  
+  }

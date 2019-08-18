@@ -1,74 +1,76 @@
-float getDistance()
-{
-  float echoTime;                   //variable to store the time it takes for a ping to bounce off an object
-  float calculatedDistance;         //variable to store the distance calculated from the echo time
 
-  //send out an ultrasonic pulse that's 10ms long
-  digitalWrite(SONAR_TRIG_PIN, HIGH);
-  delayMicroseconds(10); 
-  digitalWrite(SONAR_TRIG_PIN, LOW);
-
-  echoTime = pulseIn(SONAR_ECHO_PIN, HIGH);      //use the pulsein command to see how long it takes for the
-                                          //pulse to bounce back to the sensor
-
-  calculatedDistance = echoTime / 148.0 * 2.54;  //calculate the distance of the object that reflected the pulse (half the bounce time multiplied by the speed of sound)
-
-  return calculatedDistance;              //send back the distance that was calculated
-}
-
-float getTempratureReading(int tempUnits){
-
-    float voltage = 0;
-    float degreesC = 0;
-    float degreesF = 0;
-    float degreesK = 0;
-
-    
-    voltage = analogRead(TEMPERATURE_SENSOR_PIN) * 0.004882814;   //convert the analog reading, which varies from 0 to 1023, back to a voltage value from 0-5 volts
-    degreesC = (voltage - 0.5) * 100.0;       //convert the voltage to a temperature in degrees Celsius
-    degreesF = degreesC * (9.0/5.0) + 32.0;   //convert the voltage to a temperature in degrees Fahrenheit
-    degreesK = degreesC + 273.15;   
+void handleHardwareSerialQueries(HardwareSerial &serial){
   
+   if (serial.available() > 0){      
+   
+        inputType = serial.readStringUntil(';');
+        
+        Serial.print("Serial Instructions available:");
+        Serial.println((&Serial3==&serial)?"Serial3":"Serial");
+        Serial.println(inputType); 
+        
+        if(inputType=="WRITE_MOTORS"){
+          robotState.motorSpeedLF = serial.readStringUntil(';').toInt();       
+          robotState.motorSpeedLR = serial.readStringUntil(';').toInt();         
+          robotState.motorSpeedRF = serial.readStringUntil(';').toInt(); 
+          robotState.motorSpeedRR = serial.readStringUntil(';').toInt();
+          spinMotors(robotState.motorSpeedLF, robotState.motorSpeedLR, robotState.motorSpeedRF, robotState.motorSpeedRR); 
+        }
+        else if(inputType=="HEAD_POS"){
+          robotState.cameraBasePos = serial.readStringUntil(';').toInt();          
+          robotState.cameraArmPos = serial.readStringUntil(';').toInt(); 
+          serialprintf(Serial, "Servo Moved --> Head: %d Arm %d", robotState.cameraBasePos, robotState.cameraArmPos );
+          positionRobotHead(robotState.cameraBasePos, robotState.cameraArmPos);
+        }
+        else if(inputType=="ROT_C"){
+          int degreesToRot = Serial.readStringUntil(';').toInt();     
+          serialprintf(Serial, "Rotating Clockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
+          spinMotorsToRotateClockwise(degreesToRot);
+        }
+        else if(inputType=="ROT_A"){
+          int degreesToRot = Serial.readStringUntil(';').toInt();     
+          serialprintf(Serial, "Rotating Anticlockwise: %d Degrees", robotState.cameraBasePos, robotState.cameraArmPos );
+          spinMotorsToRotateAntiClockwise(degreesToRot);
+        }
+        else if(inputType=="READ"){
+          String type = serial.readStringUntil(';');
     
-    if(tempUnits==TEMP_UNITS_CELCIUS)
-      return degreesC;       
-    else if(tempUnits==TEMP_UNITS_FAHRENHEIT)
-      return degreesF;  
-    else if(tempUnits==TEMP_UNITS_KELVIN)
-      return degreesK; 
-}
-
-int getLightLevels(){
-  return analogRead(PHOTORESITOR_READ_PIN);
-}
-
-
- void play()
-{
-  char note='A';
-  int beats = 10;
-  int numNotes = 14; 
-
-  //this array is used to look up the notes
-  char notes[] = { 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'C', 'D', 'E', 'F', 'G', 'A', 'B', ' '};
-  //this array matches frequencies with each letter (e.g. the 4th note is 'f', the 4th frequency is 175)
-  int frequencies[] = {131, 147, 165, 175, 196, 220, 247, 262, 294, 330, 349, 392, 440, 494, 0};
-
-  int currentFrequency = 0;    //the frequency that we find when we look up a frequency in the arrays
-  int beatLength = 150;   //the length of one beat (changing this will speed up or slow down the tempo of the song)
-
-  //look up the frequency that corresponds to the note
-  for (int i = 0; i < numNotes; i++)  // check each value in notes from 0 to 14
-  {
-    if (notes[i] == note)             // does the letter passed to the play function match the letter in the array?
-    {
-      currentFrequency = frequencies[i];   // Yes! Set the current frequency to match that note
+          if(type=="MAG"){
+              readFromMPU9265();
+              printAllMPU9265Readings();
+              printAllMPU9265ReadingsToSerial(serial);
+            }
+          else if(type=="AUX_SENSORS"){
+             printRobotSensorReadingsToSerial(serial);
+           }
+          else if(type=="ORIENTATION"){
+             printRobotPositionInSpaceToSerial(serial);
+           }
+        }
+        serial.readStringUntil('\n');
     }
+}
+
+void printRobotSensorReadingsToSerial(HardwareSerial &serial){
+  serialprintf(serial,"{\"TemperatureCelcius:\" %f,\"DistanceUltrasonic:\" %f, \"LightLevels:\" %f }%s", 
+      robotState.temperatureInC,
+      robotState.distanceUltrasonic,
+      robotState.lightLevels,
+      robotState.rpmLF,robotState.rpmLR,robotState.rpmRF,robotState.rpmRR,
+      robotState.distLF,1,robotState.distRF,1,
+      ""
+      );
+  
   }
-
-  //play the frequency that matched our letter for the number of beats passed to the play function
-  tone(BUZZER_PIN, currentFrequency, beats * beatLength);   
-  delay(beats* beatLength);   //wait for the length of the tone so that it has time to play
-  delay(50);                  //a little delay between the notes makes the song sound more natural
-
+  
+void printRobotPositionInSpaceToSerial(HardwareSerial &serial){
+  serialprintf(serial, "{ \"WheelRPM:\" {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist:\" { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}, \"MPU\": {\"ax\": %d, \"ay:\" %d, \"az:\" %d, \"gx\": %d, \"gy\": %d, \"gz\": %d, \"mx\": %d, \"my\": %d, \"mz\": %d, \"Heading\": %f}}%s", 
+    robotState.rpmLF,robotState.rpmLR,robotState.rpmRF,robotState.rpmRR,
+    robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
+    robotState.mpu9265Reading.ax, robotState.mpu9265Reading.ay, robotState.mpu9265Reading.az, 
+    robotState.mpu9265Reading.gx, robotState.mpu9265Reading.gy, robotState.mpu9265Reading.gz, 
+    robotState.mpu9265Reading.mx, robotState.mpu9265Reading.my, robotState.mpu9265Reading.mz,
+    robotState.mpu9265Reading.headingDegrees,
+    ""
+    );
 }
