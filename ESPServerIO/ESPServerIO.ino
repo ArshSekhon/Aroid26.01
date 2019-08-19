@@ -1,5 +1,5 @@
-#define WIFI_SSD "SHAW-EE9FB0"
-#define WIFI_PASSWORD "Sidhu*3175"
+#define WIFI_SSD "********"
+#define WIFI_PASSWORD "*********"
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
