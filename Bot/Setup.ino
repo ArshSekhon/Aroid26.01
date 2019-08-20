@@ -66,7 +66,7 @@ void setup() {
   positionRobotHead(robotState.cameraBasePos, robotState.cameraArmPos);
   
   serialprintf(Serial,"Motor Speed: LF %d LR %d RF %d RR %d",robotState.motorSpeedLF,robotState.motorSpeedLR,robotState.motorSpeedRF,robotState.motorSpeedRR);
-  Serial.print(Serial, "Setup Complete");
+  Serial.print("Setup Complete");
 }
 
 

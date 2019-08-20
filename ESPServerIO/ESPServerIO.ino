@@ -62,7 +62,7 @@ void handleSensorRead(){
           }
       }
       if(!timeOut){
-        server.send(200, "text/plain", Serial.readStringUntil('\n'));
+        server.send(200, "application/json", Serial.readStringUntil('\n'));
         return;
       }
       else{
@@ -105,6 +105,7 @@ void setup() {
   Serial.begin(9600);
   
   Serial.println("WC,");
+  
   //start the server
   server.begin(); 
 }

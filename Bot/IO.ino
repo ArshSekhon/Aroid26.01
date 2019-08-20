@@ -55,24 +55,31 @@ void handleHardwareSerialQueries(HardwareSerial &serial){
              printRobotPositionInSpaceToSerial(serial);
            }
         }
+        else if(inputType=="RESET_ODO"){
+          
+            robotState.distLF = 0;
+            robotState.distLR = 0; 
+            robotState.distRF = 0; 
+            robotState.distRR = 0;
+          }
         serial.readStringUntil('\n');
     }
 }
 
 void printRobotSensorReadingsToSerial(HardwareSerial &serial){
-  serialprintf(serial,"{\"TemperatureCelcius:\" %f,\"DistanceUltrasonic:\" %f, \"LightLevels:\" %f }%s", 
+  serialprintf(serial,"{\"TemperatureCelcius\": %f,\"DistanceUltrasonic\": %f, \"LightLevels\": %f }%s", 
       robotState.temperatureInC,
       robotState.distanceUltrasonic,
       robotState.lightLevels,
       robotState.rpmLF,robotState.rpmLR,robotState.rpmRF,robotState.rpmRR,
-      robotState.distLF,1,robotState.distRF,1,
+      robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
       ""
       );
   
   }
   
 void printRobotPositionInSpaceToSerial(HardwareSerial &serial){
-  serialprintf(serial, "{ \"WheelRPM:\" {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist:\" { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}, \"MPU\": {\"ax\": %d, \"ay:\" %d, \"az:\" %d, \"gx\": %d, \"gy\": %d, \"gz\": %d, \"mx\": %d, \"my\": %d, \"mz\": %d, \"Heading\": %f}}%s", 
+  serialprintf(serial, "{ \"WheelRPM\": {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist\": { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}, \"MPU\": {\"ax\": %d, \"ay\": %d, \"az\": %d, \"gx\": %d, \"gy\": %d, \"gz\": %d, \"mx\": %d, \"my\": %d, \"mz\": %d, \"Heading\": %f}}%s", 
     robotState.rpmLF,robotState.rpmLR,robotState.rpmRF,robotState.rpmRR,
     robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
     robotState.mpu9265Reading.ax, robotState.mpu9265Reading.ay, robotState.mpu9265Reading.az, 

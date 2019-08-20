@@ -5,6 +5,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Servo.h> 
+//#include "HC_SR04.h"
+
+
  
 Servo cameraBaseServo;
 Servo cameraArmServo;
@@ -32,24 +35,26 @@ void loop() {
   handleHardwareSerialQueries(Serial);
   handleHardwareSerialQueries(Serial3);
   
-  //Serial.println(getDistance());
+  Serial.println(getDistance());
   
   //if obstacle avoidance is active
   if(digitalRead(SWITCH_PIN) == LOW)
       avoidObstacles();
   
+  Serial.println(robotState.distanceUltrasonic);
+  
   // if robot is heading for a target distance then kill motors if has accomplished it
   if(robotState.targetDistance!=0)
       killIfTargetDistanceAcheived(); 
-   printAllMPU9265ReadingsToSerial(Serial);   
+   printRobotPositionInSpaceToSerial(Serial);   
    displayInfoScreen();
 }
 
 void avoidObstacles(){
 
-    if(getDistance()<15){
+    if(robotState.distanceUltrasonic<15){
         playDangerSound();
         killMotors();
-        spinMotorsToRotateClockwise(180,200);
+        spinMotorsToRotateAntiClockwise(180,200);
       }
   }
