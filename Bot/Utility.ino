@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <Arduino.h>
 
+// used to print formatting strings to given serial port
 int serialprintf(HardwareSerial &serial, char *str, ...)
 {
   int i, count=0, j=0, flag=0;

@@ -1,3 +1,7 @@
+// sets the Target distance for the robot and make it move until:
+//    1. Aroid covers the required target distance
+//    2. Aroid detects an obstacle in front of it
+//    3. Kill switch is pressed
 void setTargetDistance(float distance, int speed){
     robotState.targetDistance = distance;
     robotState.startDistance = max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR);
@@ -5,6 +9,7 @@ void setTargetDistance(float distance, int speed){
     killIfTargetDistanceAcheived();
  }
 
+ 
 void killIfTargetDistanceAcheived()
 {     
       float currDist = max4(robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR);
@@ -16,64 +21,64 @@ void killIfTargetDistanceAcheived()
 }
 
 
-void spinMotorRightFront(int motorSpeed)                       //function for driving the right motor
+void spinMotorRightFront(int motorSpeed)                       
 {
-  if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
+  if (motorSpeed > 0)                                 
   {
-    digitalWrite(RAIN1, HIGH);                         //set pin 1 to high
-    digitalWrite(RAIN2, LOW);                          //set pin 2 to low
+    digitalWrite(RAIN1, HIGH);
+    digitalWrite(RAIN2, LOW);               
   }
-  else if (motorSpeed < 0)                            //if the motor should drive backward (negative speed)
+  else if (motorSpeed < 0)         
   {
-    digitalWrite(RAIN1, LOW);                          //set pin 1 to low
-    digitalWrite(RAIN2, HIGH);                         //set pin 2 to high
+    digitalWrite(RAIN1, LOW);               
+    digitalWrite(RAIN2, HIGH); 
   }
-  else                                                //if the motor should stop
+  else                                           
   {
-    digitalWrite(RAIN1, LOW);                          //set pin 1 to low
-    digitalWrite(RAIN2, LOW);                          //set pin 2 to low
+    digitalWrite(RAIN1, LOW);                        
+    digitalWrite(RAIN2, LOW);                          
   }
-  analogWrite(RPWMA, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
+  analogWrite(RPWMA, abs(motorSpeed));                 
 }
 
-void spinMotorLeftFront(int motorSpeed)                       //function for driving the right motor
+void spinMotorLeftFront(int motorSpeed)     
 {
-  if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
+  if (motorSpeed > 0)                                
   {
-    digitalWrite(LAIN1, HIGH);                         //set pin 1 to high
-    digitalWrite(LAIN2, LOW);                          //set pin 2 to low
+    digitalWrite(LAIN1, HIGH);   
+    digitalWrite(LAIN2, LOW);     
   }
-  else if (motorSpeed < 0)                            //if the motor should drive backward (negative speed)
+  else if (motorSpeed < 0)      
   {
-    digitalWrite(LAIN1, LOW);                          //set pin 1 to low
-    digitalWrite(LAIN2, HIGH);                         //set pin 2 to high
+    digitalWrite(LAIN1, LOW); 
+    digitalWrite(LAIN2, HIGH);
   }
-  else                                                //if the motor should stop
+  else                                
   {
-    digitalWrite(LAIN1, LOW);                          //set pin 1 to low
-    digitalWrite(LAIN2, LOW);                          //set pin 2 to low
+    digitalWrite(LAIN1, LOW);        
+    digitalWrite(LAIN2, LOW);             
   }
-  analogWrite(LPWMA, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
+  analogWrite(LPWMA, abs(motorSpeed));   
 }
 
-void spinMotorLeftRear(int motorSpeed)                       //function for driving the right motor
+void spinMotorLeftRear(int motorSpeed)               
 {
-  if (motorSpeed > 0)                                 //if the motor should drive forward (positive speed)
+  if (motorSpeed > 0)                                
   {
-    digitalWrite(LBIN1, HIGH);                         //set pin 1 to high
-    digitalWrite(LBIN2, LOW);                          //set pin 2 to low
+    digitalWrite(LBIN1, HIGH);               
+    digitalWrite(LBIN2, LOW);                 
   }
-  else if (motorSpeed < 0)                            //if the motor should drive backward (negative speed)
+  else if (motorSpeed < 0)            
   {
-    digitalWrite(LBIN1, LOW);                          //set pin 1 to low
-    digitalWrite(LBIN2, HIGH);                         //set pin 2 to high
+    digitalWrite(LBIN1, LOW);          
+    digitalWrite(LBIN2, HIGH);            
   }
-  else                                                //if the motor should stop
+  else                         
   {
-    digitalWrite(LBIN1, LOW);                          //set pin 1 to low
-    digitalWrite(LBIN1, LOW);                          //set pin 2 to low
+    digitalWrite(LBIN1, LOW);            
+    digitalWrite(LBIN1, LOW);                   
   }
-  analogWrite(LPWMB, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
+  analogWrite(LPWMB, abs(motorSpeed));     
 }
 
 void spinMotorRightRear(int motorSpeed)                       
@@ -81,24 +86,25 @@ void spinMotorRightRear(int motorSpeed)
   if (motorSpeed > 0)
   {
     digitalWrite(RBIN1, HIGH);
-    digitalWrite(RBIN2, LOW);                          //set pin 2 to low
+    digitalWrite(RBIN2, LOW);                    
   }
-  else if (motorSpeed < 0)                            //if the motor should drive backward (negative speed)
+  else if (motorSpeed < 0)   
   {
-    digitalWrite(RBIN1, LOW);                          //set pin 1 to low
-    digitalWrite(RBIN2, HIGH);                         //set pin 2 to high
+    digitalWrite(RBIN1, LOW);             
+    digitalWrite(RBIN2, HIGH);       
   }
-  else                                                //if the motor should stop
+  else                
   {
-    digitalWrite(RAIN1, LOW);                          //set pin 1 to low
-    digitalWrite(RAIN2, LOW);                          //set pin 2 to low
+    digitalWrite(RAIN1, LOW);  
+    digitalWrite(RAIN2, LOW);             
   }
-  analogWrite(RPWMB, abs(motorSpeed));                 //now that the motor direction is set, drive it at the entered speed
+  analogWrite(RPWMB, abs(motorSpeed));     
 }
 
 void positionRobotHead(int baseServoPosition, int armServoPosition){
       cameraBaseServo.write(baseServoPosition);
       cameraArmServo.write(armServoPosition);
+      
 }
 void spinMotors(int lfMotorSpeed, int lrMotorSpeed, int rfMotorSpeed, int rrMotorSpeed){
       spinMotorLeftFront(lfMotorSpeed);
@@ -106,6 +112,7 @@ void spinMotors(int lfMotorSpeed, int lrMotorSpeed, int rfMotorSpeed, int rrMoto
       spinMotorRightFront(rfMotorSpeed);
       spinMotorRightRear(rrMotorSpeed);
   }
+  
 void killMotors(){
   
     spinMotors(0,0,0,0);

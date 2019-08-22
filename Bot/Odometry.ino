@@ -4,7 +4,8 @@ unsigned int counterLF=0,
              counterLR=0, 
              counterRR=0;
 volatile int odotimerTicks=0;
-             
+
+// interrupt handlers that increment counters when LM393 sensors cause interrupts             
 void incCounterLF()
 { 
   counterLF++;
@@ -23,6 +24,9 @@ void incCounterRR()
   counterRR++;
 } 
 
+
+
+// attaches the interrupt handlers for odometry and creates a timer for periodic RPM calculation and setting MPU intFlag 
 void initOdometry(){
   Timer1.initialize(10000); // set timer for 1sec
   enableInterrupt((ODOMETER_LEFT_FRONT_PIN), incCounterLF, RISING); 
@@ -33,6 +37,7 @@ void initOdometry(){
   
 }
 
+//  function for timer that does RPM calculation and sets MPU intFlag 
 void timerOdometryAndMPU()
 {
   intFlag=true;
@@ -43,12 +48,6 @@ void timerOdometryAndMPU()
       robotState.rpmRF = (counterRF * 30);  // divide by number of holes in Disc
       robotState.rpmLR = (counterLR * 30);  // divide by number of holes in Disc
       robotState.rpmRR = (counterRR * 30);  // divide by number of holes in Disc
-      /*
-      serialprintf(Serial, "{ \"WheelRPM:\" {\"LF\": %d,\"LR\": %d,\"RF\": %d,\"RR\": %d }, \"WheelDist:\" { \"LF\": %f,\"LR\": %f,\"RF\": %f,\"RR\": %f}}%s", 
-      counterLF,counterLR,robotState.rpmRF,robotState.rpmRR,
-      robotState.distLF,robotState.distLR,robotState.distRF,robotState.distRR,
-      ""
-      );*/
       
       robotState.distLF += (counterLF * DISTANCE_PER_ENCODER_SLOT_IN_CM);
       robotState.distLR += (counterLR * DISTANCE_PER_ENCODER_SLOT_IN_CM); 
@@ -60,7 +59,6 @@ void timerOdometryAndMPU()
       counterRF=0, 
       counterLR=0, 
       counterRR=0;
-    
     
       
       Timer1.attachInterrupt( timerOdometryAndMPU );  //enable the timer

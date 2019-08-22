@@ -1,4 +1,5 @@
-
+// IMPORTANT: This file is derived from https://github.com/stevenvo/mpuarduino/blob/master/mpuarduino.ino 
+// It was adapted to fulfill the requirements of arduino
 #include <Wire.h>
 #include <TimerOne.h>
  
@@ -124,48 +125,19 @@ void readFromMPU9265(){
     robotState.mpu9265Reading.mx= (mx * 42.0/(1630.0-1430.0) + 21 - 1630*42.0/(1630.0-1430.0))*23/21-9.85714286;
     robotState.mpu9265Reading.my= (my *42.0/(263.0-47.0) + 21.0 -(263.0*42.0/(263.0-47.0)))* 23/26;
     
-    
-    // Hold the module so that Z is pointing 'up' and you can measure the heading with x&y
-    // Calculate heading when the magnetometer is level, then correct for signs of axis.
+     
     float heading = atan2(robotState.mpu9265Reading.my,robotState.mpu9265Reading.mx);
-    
-    // Once you have your heading, you must then add your 'Declination Angle', which is the 'Error' of the magnetic field in your location.
-    // Find yours here: http://www.magnetic-declination.com/
-    // Mine is: -13* 2' W, which is ~13 Degrees, or (which we need) 0.22 radians
-    // If you cannot find your Declination, comment out these two lines, your compass will be slightly off.
-    //float declinationAngle = 0.27611109;
-    //heading += declinationAngle;
-    
-    // Correct for when signs are reversed.
+     
     if(heading < 0)
       heading += 2*PI;
-      
-    // Check for wrap due to addition of declination.
+       
     if(heading > 2*PI)
       heading -= 2*PI;
      
     // Convert radians to degrees for readability.
     robotState.mpu9265Reading.headingDegrees = heading * 180/M_PI; 
     robotState.mpu9265Reading.headingFiltered = robotState.mpu9265Reading.headingFiltered*0.2 + robotState.mpu9265Reading.headingDegrees*0.8; 
-    /*
-    total_heading = total_heading - heading_readings[mag_read_index];
-    // read from the sensor:
-    heading_readings[mag_read_index] = robotState.mpu9265Reading.headingDegrees;
-    // add the reading to the total:
-    total_heading = total_heading + heading_readings[mag_read_index];
-    
-    // advance to the next position in the array:
-    mag_read_index++;
-  
-    // if we're at the end of the array...
-    if (mag_read_index >= SMOOTHING_FACTOR) {
-      // ...wrap around to the beginning:
-      mag_read_index = 0;
-    }
-  
-    // calculate the average:
-    robotState.mpu9265Reading.headingFiltered = total_heading / SMOOTHING_FACTOR;  
-     */
+ 
 }
 
 void printAccelerometerReadings(){

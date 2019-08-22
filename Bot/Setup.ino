@@ -69,26 +69,3 @@ void setup() {
   serialprintf(Serial,"Motor Speed: LF %d LR %d RF %d RR %d",robotState.motorSpeedLF,robotState.motorSpeedLR,robotState.motorSpeedRF,robotState.motorSpeedRR);
   Serial.print("Setup Complete");
 }
-
-
-/*
-  // Draw a single pixel in white
-  display.drawPixel(10, 10, WHITE);
-
-  // Show the display buffer on the screen. You MUST call display() after
-  // drawing commands to make them visible on screen!
-  display.display();
-  delay(2000);
-  // display.display() is NOT necessary after every single drawing command,
-  // unless that's what you want...rather, you can batch up a bunch of
-  // drawing operations and then update the screen all at once by calling
-  // display.display(). These examples demonstrate both approaches...
-  display.clearDisplay();
-
-  display.setTextSize(1.5);
-  display.setCursor(0,20);
-  display.setTextColor(WHITE);
-  display.print("Hello World!");
-  display.display();
-  
-*/

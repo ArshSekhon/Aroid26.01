@@ -6,7 +6,8 @@ unsigned long lastScreenChange = -5000;
 unsigned long currentMillis=0;
 int currentScreen=INFO_SCREEN;
 
-void displayInfoScreen(){
+// Makes Ariod switch between Aroid logo and Network Info on the OLED
+void displayContentOnScreen(){
   
   currentMillis = millis();
 
@@ -25,7 +26,7 @@ void displayInfoScreen(){
   }
   
 }
-
+// Draws Aroid logo on the screen
 void drawLogo() {
   display.clearDisplay();
 
@@ -35,7 +36,7 @@ void drawLogo() {
     logo_bmp_black_on_white, LOGO_WIDTH, LOGO_HEIGHT, 1);
   display.display(); 
 }
-
+// function prints network information on to the OLED
 void printNetworkInfo(){
       display.clearDisplay();
       display.setTextSize (1.2);
