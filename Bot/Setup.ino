@@ -1,7 +1,7 @@
 void setup() {
  
   pinMode(SONAR_TRIG_PIN, OUTPUT);
-  pinMode(SONAR_ECHO_PIN, INPUT);
+  pinMode(SONAR_ECHO_PIN, INPUT_PULLUP);
   
   // set switch pin to INPUT_PULLUP mode
   pinMode(SWITCH_PIN, INPUT_PULLUP);
@@ -36,12 +36,13 @@ void setup() {
   
 
   pinMode(BUZZER_PIN, OUTPUT);   
-  pinMode(KILL_PIN, INPUT_PULLUP);
+  pinMode(KILL_PIN, INPUT_PULLUP); 
   
   cameraBaseServo.attach(SERVO_BASE_PIN);
   cameraArmServo.attach(SERVO_ARM_PIN);
 
   
+  enableInterrupt(SONAR_ECHO_PIN, ultrasonicSensorInterruptHandler, CHANGE);
   //begin Serial communication on 9600 baud
   Serial.begin(9600);
   Serial3.begin(9600);

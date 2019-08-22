@@ -30,7 +30,7 @@
 
 
 #define SONAR_TRIG_PIN 11
-#define SONAR_ECHO_PIN 22
+#define SONAR_ECHO_PIN 12
 
 
 #define SWITCH_PIN 41

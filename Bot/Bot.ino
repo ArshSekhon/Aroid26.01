@@ -1,12 +1,11 @@
 
+#include <EnableInterrupt.h>
 #include <Wire.h> 
 #include "Constants.h"
 #include <TimerOne.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Servo.h> 
-//#include "HC_SR04.h"
-
+#include <Servo.h>  
 
  
 Servo cameraBaseServo;
@@ -22,6 +21,9 @@ String inputType;
 
 char buf[100];
 int rot=1;
+volatile bool ultrasonic_sensor_finished=true;
+volatile unsigned long ultrasonic_sensor_start, ultrasonic_sensor_end;
+
 
 void loop() {
   if(digitalRead(KILL_PIN) == LOW){
@@ -35,10 +37,10 @@ void loop() {
   handleHardwareSerialQueries(Serial);
   handleHardwareSerialQueries(Serial3);
   
-  Serial.println(getDistance());
+  Serial.println(robotState.distanceUltrasonic);
   
   //if obstacle avoidance is active
-  if(digitalRead(SWITCH_PIN) == LOW)
+  if(digitalRead(SWITCH_PIN) == LOW && millis()>5000)
       avoidObstacles();
   
   Serial.println(robotState.distanceUltrasonic);
@@ -52,9 +54,11 @@ void loop() {
 
 void avoidObstacles(){
 
-    if(robotState.distanceUltrasonic<15){
+    if(ultrasonic_sensor_finished && robotState.distanceUltrasonic<25){
         playDangerSound();
         killMotors();
-        spinMotorsToRotateAntiClockwise(180,200);
+        spinMotorsToRotateClockwise(200,200);
+        
+        startUltrasonicSensorReading();
       }
   }

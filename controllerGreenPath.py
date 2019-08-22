@@ -358,6 +358,13 @@ def move():
 
             else:
                 pass
+
+        url = "http://192.168.0.99/sensorRead"
+        payload = "sensorType=READ%3BAUX_SENSORS%3B&undefined="
+        headers = {'Content-Type': "application/x-www-form-urlencoded", 'cache-control': "no-cache"}
+        response = requests.request("POST", url, data=payload, headers=headers)
+        print(response.text)
+
         waiting_ticks = waiting_ticks - 1
         if waiting_ticks < 0:
             waiting_ticks = 0

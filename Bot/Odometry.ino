@@ -25,10 +25,10 @@ void incCounterRR()
 
 void initOdometry(){
   Timer1.initialize(10000); // set timer for 1sec
-  attachInterrupt(digitalPinToInterrupt(ODOMETER_LEFT_FRONT_PIN), incCounterLF, RISING); 
-  attachInterrupt(digitalPinToInterrupt(ODOMETER_LEFT_REAR_PIN), incCounterLR, RISING); 
-  attachInterrupt(digitalPinToInterrupt(ODOMETER_RIGHT_FRONT_PIN), incCounterRF, RISING); 
-  attachInterrupt(digitalPinToInterrupt(ODOMETER_RIGHT_REAR_PIN), incCounterRR, RISING); 
+  enableInterrupt((ODOMETER_LEFT_FRONT_PIN), incCounterLF, RISING); 
+  enableInterrupt((ODOMETER_LEFT_REAR_PIN), incCounterLR, RISING); 
+  enableInterrupt((ODOMETER_RIGHT_FRONT_PIN), incCounterRF, RISING); 
+  enableInterrupt((ODOMETER_RIGHT_REAR_PIN), incCounterRR, RISING); 
   Timer1.attachInterrupt(timerOdometryAndMPU ); // enable the timer
   
 }

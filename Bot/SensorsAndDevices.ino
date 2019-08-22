@@ -2,11 +2,18 @@ float prevDist=0;
 void updateStateFromSensors(){
     readFromMPU9265();
     robotState.lightLevels = getLightLevels();
-    robotState.distanceUltrasonic = getDistance();
+
+    if(ultrasonic_sensor_finished){ 
+      if(getPreviousDistanceFromUltrasonicSensor()!=0)
+        robotState.distanceUltrasonic = getPreviousDistanceFromUltrasonicSensor(); 
+      startUltrasonicSensorReading();
+      delay(100);
+    }
+  
     robotState.temperatureInC = getTempratureReading(TEMP_UNITS_CELCIUS);    
     
   }
-
+/*
 float getDistance()
 {
   float echoTime;                   //variable to store the time it takes for a ping to bounce off an object
@@ -33,7 +40,7 @@ float getDistance()
       }
 
   return calculatedDistance;              //send back the distance that was calculated
-}
+}*/
 float getTempratureReading(int tempUnits){
 
     float voltage = 0;
