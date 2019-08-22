@@ -2,13 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e96ea0e4-22dd-4923-82e5-c6ca2fe885bd" name="Default Changelist" comment="sharp turn">
+      <change afterPath="$PROJECT_DIR$/controller_approach1.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Bot.ino" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Bot.ino" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Constants.h" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Constants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Odometry.ino" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Odometry.ino" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/SensorsAndDevices.ino" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/SensorsAndDevices.ino" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bot/Setup.ino" beforeDir="false" afterPath="$PROJECT_DIR$/Bot/Setup.ino" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllerGreenPath.py" beforeDir="false" afterPath="$PROJECT_DIR$/controllerGreenPath.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllerGreenPath.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,10 +15,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/controllerGreenPath.py">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/controller.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="376">
+            <state relative-caret-position="5817">
               <caret line="277" column="21" selection-start-line="277" selection-start-column="21" selection-end-line="277" selection-end-column="21" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
@@ -51,7 +48,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/controller1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3150">
+            <state relative-caret-position="763">
               <caret line="160" column="46" selection-start-line="160" selection-start-column="46" selection-end-line="160" selection-end-column="46" />
             </state>
           </provider>
@@ -61,7 +58,7 @@
         <entry file="file://$PROJECT_DIR$/travel_mapping.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="210">
-              <caret line="11" column="45" lean-forward="true" selection-start-line="7" selection-start-column="3" selection-end-line="11" selection-end-column="45" />
+              <caret line="11" column="45" selection-start-line="7" selection-start-column="3" selection-end-line="11" selection-end-column="45" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -69,11 +66,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/controller.py">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/controller_approach1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2835">
-              <caret line="145" column="5" selection-start-line="145" selection-start-column="5" selection-end-line="145" selection-end-column="5" />
+            <state relative-caret-position="500">
+              <caret line="146" column="33" selection-start-line="146" selection-start-column="22" selection-end-line="146" selection-end-column="33" />
               <folding>
                 <element signature="e#0#29#0" expanded="true" />
               </folding>
@@ -178,7 +175,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.controllerGreenPath">
+  <component name="RunManager" selected="Python.controller">
     <configuration name="controller" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Aroid26.01" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -201,7 +198,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="controller1" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="controller_approach1" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Aroid26.01" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -214,7 +211,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/controller1.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/controller_approach1.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -223,56 +220,14 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="controllerGreenPath" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="Aroid26.01" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/controllerGreenPath.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="map" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="Aroid26.01" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/travel_mapping.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+    <list>
+      <item itemvalue="Python.controller_approach1" />
+      <item itemvalue="Python.controller" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.controllerGreenPath" />
-        <item itemvalue="Python.map" />
         <item itemvalue="Python.controller" />
-        <item itemvalue="Python.controller1" />
+        <item itemvalue="Python.controller_approach1" />
       </list>
     </recent_temporary>
   </component>
@@ -290,6 +245,7 @@
       <workItem from="1565995658106" duration="31173000" />
       <workItem from="1566312007385" duration="3054000" />
       <workItem from="1566350279207" duration="3206000" />
+      <workItem from="1566511950824" duration="734000" />
     </task>
     <task id="LOCAL-00001" summary="- Calibrated Camera&#10;- Added better curve detection&#10;- Changed color of the lane">
       <created>1565995949740</created>
@@ -302,13 +258,12 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="77265000" />
+    <option name="totallyTimeSpent" value="77999000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="26" width="1680" height="973" extended-state="0" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25885227" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.26190478" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -366,9 +321,9 @@
     <entry file="file://$PROJECT_DIR$/capture-20190816-115854.png" />
     <entry file="file://$PROJECT_DIR$/capture-20190816-120030.png" />
     <entry file="file://$PROJECT_DIR$/birdseye.py" />
-    <entry file="file://$PROJECT_DIR$/controllerGreenPath.py">
+    <entry file="file://$PROJECT_DIR$/controller.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="376">
+        <state relative-caret-position="5817">
           <caret line="277" column="21" selection-start-line="277" selection-start-column="21" selection-end-line="277" selection-end-column="21" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
@@ -390,27 +345,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/controller1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3150">
-          <caret line="160" column="46" selection-start-line="160" selection-start-column="46" selection-end-line="160" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/travel_mapping.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
-          <caret line="11" column="45" lean-forward="true" selection-start-line="7" selection-start-column="3" selection-end-line="11" selection-end-column="45" />
+          <caret line="11" column="45" selection-start-line="7" selection-start-column="3" selection-end-line="11" selection-end-column="45" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/controller.py">
+    <entry file="file://$PROJECT_DIR$/controller1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2835">
-          <caret line="145" column="5" selection-start-line="145" selection-start-column="5" selection-end-line="145" selection-end-column="5" />
+        <state relative-caret-position="763">
+          <caret line="160" column="46" selection-start-line="160" selection-start-column="46" selection-end-line="160" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/controller_approach1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="500">
+          <caret line="146" column="33" selection-start-line="146" selection-start-column="22" selection-end-line="146" selection-end-column="33" />
           <folding>
             <element signature="e#0#29#0" expanded="true" />
           </folding>

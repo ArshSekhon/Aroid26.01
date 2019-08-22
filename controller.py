@@ -1,55 +1,187 @@
-from collections import deque 
 import cv2
-from cv2 import VideoCapture
 import urllib.request
-from numpy import ones,vstack
 import numpy as np
-import imutils
-from statistics import mean 
-from numpy.linalg import lstsq
 import requests
+import pickle
 import time
+import PID
+import travel_mapping
 
-st=''
-colorLower = (33,80,40)
-colorUpper = (102,255,255)
-pts = deque(maxlen=1024)
+import matplotlib.pyplot as plt
 
-def do_segment(frame):
-    # Since an image is a multi-directional array containing the relative intensities of each pixel in the image, we can use frame.shape to return a tuple: [number of rows, number of columns, number of channels] of the dimensions of the frame
-    # frame.shape[0] give us the number of rows of pixels the frame has. Since height begins from 0 at the top, the y-coordinate of the bottom of the frame is its height
+
+def segment_roi(frame, polygons):
     height = frame.shape[0]
     width = frame.shape[1]
-    # Creates a triangular polygon for the mask defined by three (x, y) coordinates
-    polygons = np.array([
-                            [(0, height), (width, height), (width, (int)(height*(140/400))) , ((int)(width/2), (int)(height*(60/400))) , (0, (int)(height*(140/400))) ]
-                        ])
-    # Creates an image filled with zero intensities with the same dimensions as the frame
     mask = np.zeros_like(frame)
-    # Allows the mask to be filled with values of 1 and the other areas to be filled with values of 0
     cv2.fillPoly(mask, polygons, 255)
-    # A bitwise and operation between the mask and frame keeps only the triangular area of the frame
-    segment = cv2.bitwise_and(frame, mask) 
-
+    segment = cv2.bitwise_and(frame, mask)
     return segment
 
 
-#client = mqtt.Client(client_id="camPythonaa", clean_session=True, userdata=None) 
+def draw_lines(img, lines, color=[0,0,255]):
+    try:
+        for line in lines:
+            coords = line[0]
+            cv2.line(img, (coords[0],coords[1]), (coords[2],coords[3]),color, 3)
+    except:
+        pass
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
+
+def sign(x):
+    return (1, -1)[x < 0]
+
+
+def slope_sign(x1, y1, x2, y2):
+    return sign(y2 * 1.0 - y1) / sign(x2 * 1.0 - x1)
+
+
+def find_heading_lines(img, lanes, last_heading, heading_x_from_hist):
+    if(len(lanes)>1):
+        totalY = 0
+        totalX = 0
+        for line_segment in lanes:
+            for x1, y1, x2, y2 in line_segment:
+                if (y1 < 0):
+                    y1 = 999
+                if (y2 < 0):
+                    y2 = 999
+
+                if (y1 > img.shape[0]):
+                    y1 = img.shape[0]
+                if (y2 > img.shape[0]):
+                    y2 = img.shape[0]
+
+                if (x1 < 0):
+                    x1 = 999
+                if (x2 < 0):
+                    x2 = 999
+
+                if (x1 > img.shape[1]):
+                    x1 = img.shape[1]
+                if (x2 > img.shape[1]):
+                    x2 = img.shape[1]
+
+                totalY = totalY + min(y1, y2)
+                if (min(y1, y2) == y2):
+                    totalX = totalX + x2
+                else:
+                    totalX = totalX + x1
+        return (totalX / 2, totalY / 2)
+    elif (len(lanes)==1):
+        x1, y1, x2, y2 = lanes[0][0][0], lanes[0][0][1], lanes[0][0][2], lanes[0][0][3]
+        max_x = max(x1,x2)
+        min_x  = min(x1,x2)
+        if((slope_sign(x1, y1, x2, y2))<0):
+            current_heading = (((max_x+img.shape[1])//2 + 1.5*heading_x_from_hist)//2.5, (y1+y2)//2)
+            last_heading = current_heading
+            return current_heading
+        else:
+            current_heading = (((min_x)/2.5 + 1.5*heading_x_from_hist)//2.5, (y1+y2)//2)
+            last_heading = current_heading
+            return current_heading
+
+    else:
+        return (heading_x_from_hist, img.shape[0]//2)
+
+def create_windows():
+    cv2.namedWindow("Original Undistorted")
+    cv2.namedWindow("Canny Edges Road")
+    cv2.namedWindow("Color Hist")
+    cv2.namedWindow("Road Mask")
+    cv2.namedWindow("Hough lines with Lanes")
+
+
+    cv2.moveWindow("Original Undistorted", 0, 0)
+    cv2.moveWindow("Color Hist", 1050, 0)
+    cv2.moveWindow("Road Mask", 575, 0)
+    cv2.moveWindow("Canny Edges Road", 575, 490)
+    cv2.moveWindow("Hough lines with Lanes", 1050, 490)
+
+
+def process_img(original_image, last_heading):
+    processed_img = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV)
+    sensitivity=50
+    sensitivity = 50
+    green_mask = cv2.inRange(processed_img, (60 - sensitivity, 10, 10), (60 + sensitivity, 255, 255))
+    in_mask = green_mask>0
+    green = np.zeros_like(processed_img, np.uint8)
+    green[in_mask] = processed_img[in_mask]
+    cv2.imshow("Road Mask", green)
+
+    processed_img = cv2.GaussianBlur(green, (7,7), 0 )
+    processed_img = cv2.Canny(processed_img, threshold1=110, threshold2=200)
+    processed_img = cv2.GaussianBlur(processed_img, (3,3), 0 )
+
+    cv2.imshow("Canny Edges Road", processed_img)
+
+    height, width = original_image.shape[0],original_image.shape[1]
+
+    roi_polygons = np.array([
+        [(0, height), (width, height), (width, (int)(height * (0.5))), (0, (int)(height * (0.5)))]
+    ])
+    processed_img_roi = segment_roi(processed_img, roi_polygons)
+
+    hough_lines = cv2.HoughLinesP(processed_img, 10 ,1*np.pi/180, 200, np.array([]), minLineLength=15, maxLineGap=1)
+    hough_lines_roi = cv2.HoughLinesP(processed_img_roi, 10 ,1*np.pi/180, 200,  np.array([]), minLineLength=15, maxLineGap=1)
+
+    lane_lines = average_slope_intercept(processed_img, hough_lines_roi)
+    original_image_with_lanes = original_image
+    original_image_with_hough_lines = original_image
+
+    draw_lines(original_image_with_lanes, lane_lines)
+    draw_lines(original_image_with_hough_lines, hough_lines,[0,0,255])
+    draw_lines(original_image_with_hough_lines, hough_lines_roi)
+    draw_lines(original_image_with_hough_lines, lane_lines, [255, 0, 0])
+    # output = cv2.addWeighted(original_image, 0.9, original_image_with_lanes, 1, 1)
+    hue_filter = green[:, :, 0]
+    fig = plt.figure()
+    plot =fig.add_subplot(111)
+
+    # If we haven't already shown or saved the plot, then we need to
+    # draw the figure first..
+    histogram = np.sum(hue_filter[hue_filter.shape[0] // 2:, :], axis=0)
+
+    plot.plot(histogram)
+    fig.canvas.draw()
+
+    # Now we can save it to a numpy array.
+    data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+    data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+    cv2.imshow("Color Hist", data)
+
+    max_val = np.argmax(histogram[:])
+
+
+    area_undercurve_path_hue=np.sum(histogram[:])
+    half_area_undercurve = area_undercurve_path_hue//2
+
+
+    temp_area=0
+    heading_x_from_hist = -1
+    for i, val in enumerate(histogram):
+        temp_area+=val
+        if(temp_area>half_area_undercurve):
+            #print(temp_area)
+            heading_x_from_hist = i
+            break
+
+    heading_point = find_heading_lines(original_image_with_lanes, lane_lines, last_heading, heading_x_from_hist)
+    return original_image, heading_point
+
+
 def make_points(frame, line):
     height, width = frame.shape
     slope, intercept = line
     y1 = height  # bottom of the frame
-    y2 = int(y1 * 1 / 2)  # make points from middle of the frame down
+    y2 = int(y1 * 1 / 1.8)
 
     # bound the coordinates within the frame
     x1 = max(-width, min(2 * width, int((y1 - intercept) / slope)))
     x2 = max(-width, min(2 * width, int((y2 - intercept) / slope)))
     return [[x1, y1, x2, y2]]
+
 
 def average_slope_intercept(frame, line_segments):
     """
@@ -59,21 +191,19 @@ def average_slope_intercept(frame, line_segments):
     """
     lane_lines = []
     if line_segments is None:
-        #logging.info('No line_segment segments detected')
         return lane_lines
 
     height, width = frame.shape
     left_fit = []
     right_fit = []
 
-    boundary = 2/3
+    boundary = 1/2
     left_region_boundary = width * (1 - boundary)  # left lane line segment should be on left 2/3 of the screen
     right_region_boundary = width * boundary # right lane line segment should be on left 2/3 of the screen
 
     for line_segment in line_segments:
         for x1, y1, x2, y2 in line_segment:
             if x1 == x2:
-                #logging.info('skipping vertical line segment (slope=inf): %s' % line_segment)
                 continue
             fit = np.polyfit((x1, x2), (y1, y2), 1)
             slope = fit[0]
@@ -86,159 +216,159 @@ def average_slope_intercept(frame, line_segments):
                     right_fit.append((slope, intercept))
 
     left_fit_average = np.average(left_fit, axis=0)
-    if len(left_fit) > 0:
-        lane_lines.append(make_points(frame, left_fit_average))
-
     right_fit_average = np.average(right_fit, axis=0)
-    if len(right_fit) > 0:
+
+    if len(left_fit) > 0 :
+        avg_slope_left,_ = left_fit_average
+    if len(right_fit) > 0 :
+        avg_slope_right,_ = right_fit_average
+
+    if len(left_fit) > 0 and len(right_fit) > 0 and not sign(avg_slope_left)==sign(avg_slope_right):
+        lane_lines.append(make_points(frame, left_fit_average))
         lane_lines.append(make_points(frame, right_fit_average))
 
-    #logging.debug('lane lines: %s' % lane_lines)  # [[[316, 720, 484, 432]], [[1009, 720, 718, 432]]]
+    elif len(left_fit) > 0:
+        lane_lines.append(make_points(frame, left_fit_average))
+
+    elif len(right_fit) > 0:
+        lane_lines.append(make_points(frame, right_fit_average))
+
     return lane_lines
-def find_heading_lines(img, lanes):
-    totalY=0
-    totalX=0
-    for line_segment in lanes:
-        for x1, y1, x2, y2 in line_segment:
-            if(y1<0):
-                y1=999
-            if(y2<0):
-                y2=999
 
-            if(y1>img.shape[0]):
-                y1=img.shape[0]
-            if(y2>img.shape[0]):
-                y2=img.shape[0]
-            
-            if(x1<0):
-                x1=999
-            if(x2<0):
-                x2=999
 
-            if(x1>img.shape[1]):
-                x1=img.shape[1]
-            if(x2>img.shape[1]):
-                x2=img.shape[1]
-
-            totalY = totalY + min(y1, y2)
-            if (min(y1,y2)==y2):
-                totalX = totalX+x2
-            else:
-                totalX = totalX+x1
-    
-    return (totalX/2, totalY/2)
-
-def draw_lines(img, lines, color=[0,255,0]):
-    try:
-        for line in lines:
-            coords = line[0]
-            cv2.line(img, (coords[0],coords[1]), (coords[2],coords[3]),color, 3)
-    except:
-        pass
- 
-
-def process_img(original_image):
-    processed_img = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-    processed_img = cv2.Canny(processed_img, threshold1=150, threshold2=200)
-    processed_img = cv2.GaussianBlur(processed_img, (9,9), 0 )  
-    #processed_img= do_segment(processed_img)
-    #edges
-    #processed_img = do_segment(processed_img)
-    hough_lines = cv2.HoughLinesP(processed_img, 1, np.pi/180, 180, minLineLength=15, maxLineGap=10)
-
-    lane_lines    = average_slope_intercept(processed_img, hough_lines)
-    original_image_with_lanes=original_image
-    original_image_with_hough_lines=original_image
-
-    draw_lines(original_image_with_lanes, lane_lines) 
-    draw_lines(original_image_with_hough_lines, hough_lines) 
-    draw_lines(original_image_with_hough_lines, lane_lines, [255,0,0]) 
-    # output = cv2.addWeighted(original_image, 0.9, original_image_with_lanes, 1, 1)
-  
-    cv2.imshow('res',original_image_with_hough_lines)
-
-    heading_lanes=find_heading_lines(original_image_with_lanes, lane_lines)
-    
-    
-    return original_image, heading_lanes
 def spinMotors(lf, lr, rf, rr):
     url = "http://192.168.0.99/serialInput"
 
-    payload = "input=W%2C{:d}%2C{:d}%2C{:d}%2C{:d}&undefined=".format(lf, lr, rf, rr)
+    payload = "input=WRITE_MOTORS%3B{:d}%3B{:d}%3B{:d}%3B{:d}%3B&undefined=".format(lf, lr, rf, rr)
     headers = {'Content-Type': "application/x-www-form-urlencoded",'cache-control': "no-cache"}
 
     response = requests.request("POST", url, data=payload, headers=headers)
 
 
-def main():
-    resp=urllib.request.urlopen("http://192.168.0.100/control?var=framesize&val=6")
-    filtered_heading_x=0
-    filtered_heading_y=0
+def moveDistance(distance, speed):
+    url = "http://192.168.0.99/serialInput"
 
+    payload = "input=SET_TARGET_DIST%3B{:d}%3B{:d}%3B&undefined=".format(distance, speed)
+    headers = {'Content-Type': "application/x-www-form-urlencoded",'cache-control': "no-cache"}
+
+    response = requests.request("POST", url, data=payload, headers=headers)
+
+
+frame_to_save = None
+
+
+def move():
+    resp=urllib.request.urlopen("http://192.168.0.100/control?var=framesize&val=6")
+    h, w = 480,640
+    calib_params = pickle.load( open( "camera_calibration.pickle", "rb" ) )
+    mtx = calib_params["mtx"]
+    dist = calib_params["dist"]
+    filtered_heading_x = 0
+    filtered_heading_y = 0
+    last_heading = (0,0)
+    P_turn = 0.001/320
+    I_turn = 0.003/1000
+    D_turn = 0.0005/50
+    pid_turn = PID.PID_Control(P_turn, I_turn, D_turn)
+    pid_turn.SetPoint=0
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (640, 480), 1, (640, 480))
     tick = 0
     waiting_ticks = 0
+    delta_time = 0
+    motorSpeed1 = 180
+    motorSpeed2 = 150
+
+    create_windows()
     while True:
-        #client.loop()    
         resp=urllib.request.urlopen("http://192.168.0.100/capture")
         frame = np.asarray(bytearray(resp.read()), dtype="uint8")
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-        frame=cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+        frame=cv2.rotate(frame, cv2.ROTATE_180)
+        frame = cv2.undistort(frame, mtx, dist, None, newcameramtx)
+        # crop the frame to get rid of distortion
+        x, y, w, h = roi
+        frame = frame[y:y + h, x:x + w]
+        global frame_to_save
+        frame_to_save = frame.copy()
+        cv2.imshow("Original Undistorted", frame_to_save)
 
-        
-        
-        frame, (heading_x, heading_y) = process_img(frame)  
-        filtered_heading_x = filtered_heading_x*0.9+heading_x*0.1
-        filtered_heading_y = filtered_heading_y*0.9+heading_y*0.1
-        print(filtered_heading_x, filtered_heading_y)
-        
-        cv2.line(frame, ((int)(filtered_heading_x),0), ((int)(filtered_heading_x), (int)(frame.shape[0])), [0,0,255], 3)
-        cv2.line(frame, (0, (int)(filtered_heading_y)), ((int)(frame.shape[1]), (int)(filtered_heading_y)), [0,0,255], 3)
+        frame, (heading_x, heading_y) = process_img(frame, last_heading)
+        filtered_heading_x = filtered_heading_x * 0.8 + heading_x * 0.2
+        filtered_heading_y = filtered_heading_y * 0.8 + heading_y * 0.2
+        # print(filtered_heading_x, filtered_heading_y)
 
-        cv2.imshow("Frame", frame) 
-        if(tick<20):
-            tick=tick+1
+        error = (int)(filtered_heading_x-frame.shape[1]/2)
+        distance =  (int)(frame.shape[0]-filtered_heading_y)
+
+        print("Error:", error,  "Dist:", distance, "Heading X: ", filtered_heading_x)
+
+        cv2.line(frame, ((int)(filtered_heading_x), 0), ((int)(filtered_heading_x), (int)(frame.shape[0])), [255, 255, 0], 3)
+        cv2.line(frame, (0, (int)(filtered_heading_y)), ((int)(frame.shape[1]), (int)(filtered_heading_y)), [255, 255, 0], 3)
+
+        cv2.imshow("Hough lines with Lanes", frame)
+        if tick < 20:
+            tick = tick + 1
         else:
-            if(waiting_ticks==0):
-                if(filtered_heading_x>(frame.shape[1]/2-100) and filtered_heading_x<(frame.shape[1]/2+100)):
-                    print("go straight") 
-                    spinMotors(90,90,90,90)
-                    time.sleep(1)
-                    spinMotors(0,0,0,0)
+            if waiting_ticks == 0:
+                error_heading = frame.shape[1]/2-filtered_heading_x
+                travel_mapping.get_orientation_and_odometry_point()
 
-                    waiting_ticks=5  
-                elif(filtered_heading_x<150 ):
-                    print("turn left")  
-                    spinMotors(-200,-200,200,200) 
-                    time.sleep(0.15)
-                    spinMotors(0,0,0,0)
-                    waiting_ticks=15            
-                elif(filtered_heading_x>frame.shape[1]-150 ):
-                    print("turn right") 
-                    spinMotors(200,200,-200,-200) 
-                    time.sleep(.15)
-                    spinMotors(0,0,0,0)
-                    waiting_ticks=15         
-                elif(filtered_heading_x<(frame.shape[1]/2-100)): 
-                    print("turn right") 
-                    spinMotors(200,200,-200,-200) 
-                    time.sleep(.05)
-                    spinMotors(0,0,0,0)
-                    waiting_ticks=10   
+                if -100 < error_heading < 100:
+                    print("go straight")
+                    spinMotors(motorSpeed1, motorSpeed1, motorSpeed1, motorSpeed1)
+                    time.sleep(1.2)
+                    spinMotors(0, 0, 0, 0)
+                    delta_time += 1
+                    waiting_ticks = 10
+                elif -100 < error_heading:
+                    pid_turn.update(error_heading, delta_time)
+                    print("go left: ", pid_turn.output)
+                    delta_time = pid_turn.output
 
-                elif(filtered_heading_x>(frame.shape[1]/2+100)): 
-                    print("turn left")  
-                    spinMotors(-200,-200,200,200) 
-                    time.sleep(0.05)
-                    spinMotors(0,0,0,0)
-                    waiting_ticks=10   
+                    spinMotors(-motorSpeed1, -motorSpeed1, motorSpeed1, motorSpeed1)
+                    time.sleep(abs(pid_turn.output))
+                    spinMotors(0, 0, 0, 0)
+                    # we dont want to count rotation wheel movements
+                    travel_mapping.reset_odometer()
+
+                    spinMotors(motorSpeed2, motorSpeed2, motorSpeed2, motorSpeed2)
+                    time.sleep(0.5)
+                    delta_time += 0.5
+                    spinMotors(0, 0, 0, 0)
+
+                    waiting_ticks = 10
+                else:
+                    delta_time = 0
+                    pid_turn.update(error_heading, delta_time)
+                    print("go right: ", pid_turn.output)
+                    delta_time = pid_turn.output
+                    delta_time += 0.5
+
+                    spinMotors(motorSpeed1, motorSpeed1, -motorSpeed1, -motorSpeed1)
+                    time.sleep(abs(pid_turn.output))
+                    spinMotors(0, 0, 0, 0)
+
+                    # we dont want to count rotation wheel movements
+                    travel_mapping.reset_odometer()
+
+                    spinMotors(90, 90, 90, 90)
+                    time.sleep(0.5)
+                    spinMotors(0, 0, 0, 0)
+                    waiting_ticks = 10
+
             else:
-                pass    
- 
+                pass
 
-        waiting_ticks= waiting_ticks-1
-        if(waiting_ticks<0):
-            waiting_ticks=0
- 
+        url = "http://192.168.0.99/sensorRead"
+        payload = "sensorType=READ%3BAUX_SENSORS%3B&undefined="
+        headers = {'Content-Type': "application/x-www-form-urlencoded", 'cache-control': "no-cache"}
+        response = requests.request("POST", url, data=payload, headers=headers)
+        print(response.text)
+
+        waiting_ticks = waiting_ticks - 1
+        if waiting_ticks < 0:
+            waiting_ticks = 0
+
         key = cv2.waitKey(1) & 0xFF
 
         # if the 'q' key is pressed, stop the loop
@@ -247,7 +377,9 @@ def main():
 
         # cleanup the camera and close any open windows
 
+
 try:
-    main()
+    move()
 except KeyboardInterrupt:
-    spinMotors(0,0,0,0)
+    spinMotors(0, 0, 0, 0)
+    travel_mapping.save_travel_history()
