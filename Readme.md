@@ -2,7 +2,7 @@
 
 Aroid is an open-source four-wheeled robot with self-driving abilities that can navigate green coloured roads autonomously while avoiding obstacles. All the code, circuit diagrams, hardware list is freely available on Github.
 
-<img src="https://github.com/ArshSekhon/Aroid26.01/raw/master/Docs/Aroid26.01.jpg" width="50%">
+<img src="https://github.com/ArshSekhon/Aroid26.01/raw/master/Docs/Aroid26.01.jpg" width="100%">
 
 **Building Cost:** ~80USD
 
